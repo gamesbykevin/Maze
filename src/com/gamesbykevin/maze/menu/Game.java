@@ -27,7 +27,7 @@ public class Game extends Menu
     //unique object to identify each Option
     public enum OptionKey
     {
-        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny
+        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, MazeColumnsRows
     }
     
     //unique key to indentify each Layer

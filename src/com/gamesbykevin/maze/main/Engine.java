@@ -2,8 +2,10 @@ package com.gamesbykevin.maze.main;
 
 import com.gamesbykevin.framework.input.*;
 import com.gamesbykevin.framework.input.Keyboard;
-
+import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.Game.LayerKey;
+import com.gamesbykevin.maze.menu.Game.OptionKey;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -29,6 +31,9 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     
     //original font
     private Font font;
+    
+    //our maze object
+    private Labyrinth labyrinth;
     
     /**
      * The Engine that contains the game/menu objects
@@ -103,6 +108,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                     //update main game logic here
                     
                     
+                    
                 }
                 
                 if (mouse.isMouseReleased())
@@ -130,6 +136,17 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     {
         //stop all sound before starting game
         getResources().stopAllSound();
+        
+        //algorithm selected to generate maze
+        final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
+        
+        int colrow = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeColumnsRows) * 5) + 10;
+        
+        labyrinth = new Labyrinth(colrow, colrow);
+        labyrinth.setStart(0, 0);
+        labyrinth.setFinish(colrow - 1, colrow - 1);
+        labyrinth.create(Labyrinth.Algorithm.values()[algorithmIndex]);
+        
         
         //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
     }
@@ -178,7 +195,10 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         
         //DRAW MAIN GAME HERE
         
-        
+        if (labyrinth != null)
+        {
+            labyrinth.render(g2d, getMain().getScreen());
+        }
         
         
         

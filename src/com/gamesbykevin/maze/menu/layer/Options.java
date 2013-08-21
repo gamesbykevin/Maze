@@ -1,5 +1,6 @@
 package com.gamesbykevin.maze.menu.layer;
 
+import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.menu.Option;
 
@@ -31,6 +32,20 @@ public class Options extends Layer implements LayerRules
         //setup options here
         Option tmp;
         
+        tmp = new Option("Algorithm: ");
+        for (Algorithm algorithm : Algorithm.values())
+        {
+            tmp.add(algorithm.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(Game.OptionKey.Algorithm, tmp);
+        
+        tmp = new Option("Cols / Rows: ");
+        for (int i=10; i <= 50; i += 5)
+        {
+            tmp.add(i + "", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(Game.OptionKey.MazeColumnsRows, tmp);
+
         tmp = new Option("Sound: ");
         tmp.add("On", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         tmp.add("Off",engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
