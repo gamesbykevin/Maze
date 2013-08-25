@@ -1,6 +1,7 @@
 package com.gamesbykevin.maze.maze;
 
 import com.gamesbykevin.framework.base.Cell;
+import com.gamesbykevin.framework.input.Keyboard;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
@@ -28,6 +29,8 @@ public class Maze
     //the Location where the maze should be centered around
     private Cell start;
     
+    private FirstPersonMaze fpm;
+    
     public Maze(final int total, final int algorithmIndex) throws Exception
     {
         this.rows = total;
@@ -41,6 +44,7 @@ public class Maze
         labyrinth.create();
         labyrinth.getProgress().setDescription("Generating Maze");
         
+        fpm = new FirstPersonMaze();
     }
     
     public void dispose()
@@ -51,7 +55,7 @@ public class Maze
         labyrinth = null;
     }
     
-    public void update() throws Exception
+    public void update(Keyboard keyboard) throws Exception
     {
         if (labyrinth != null)
         {
@@ -59,6 +63,11 @@ public class Maze
             {
                 //for every Engine update we will update the maze generation 1 time(s)
                 labyrinth.update();
+            }
+            else
+            {
+                //update first person maze
+                fpm.update(labyrinth.getLocation(start.getCol(), start.getRow()), keyboard);
             }
         }
     }
@@ -295,9 +304,9 @@ public class Maze
         return graphics;
     }
     
-    private Graphics render3D(final Graphics graphics, final Rectangle screen)
+    private Graphics render3D(final Graphics graphics, final Rectangle screen) throws Exception
     {
-        
+        fpm.render(graphics, labyrinth.getLocations());
         return graphics;
     }
 }

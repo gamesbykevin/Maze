@@ -106,7 +106,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                 if (menu.hasFinished() && menu.hasFocus())
                 {
                     if (maze != null)
-                        maze.update();
+                        maze.update(getKeyboard());
                 }
                 
                 if (mouse.isMouseReleased())
