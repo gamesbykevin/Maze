@@ -2,8 +2,8 @@ package com.gamesbykevin.maze.main;
 
 import com.gamesbykevin.framework.input.*;
 import com.gamesbykevin.framework.input.Keyboard;
-import com.gamesbykevin.framework.labyrinth.Labyrinth;
-import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
+
+import com.gamesbykevin.maze.maze.Maze;
 import com.gamesbykevin.maze.menu.Game;
 import com.gamesbykevin.maze.menu.Game.LayerKey;
 import com.gamesbykevin.maze.menu.Game.OptionKey;
@@ -33,8 +33,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     //original font
     private Font font;
     
-    //our maze object
-    private Labyrinth labyrinth;
+    private Maze maze;
     
     /**
      * The Engine that contains the game/menu objects
@@ -42,7 +41,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
      * @param main Main object that contains important information so we need a reference to it
      * @throws CustomException 
      */
-    public Engine(final Main main) 
+    public Engine(final Main main) throws Exception
     {
         this.main = main;
         this.mouse = new Mouse();
@@ -106,10 +105,8 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                 //if the menu is finished and the window has focus
                 if (menu.hasFinished() && menu.hasFocus())
                 {
-                    //update main game logic here
-                    
-                    
-                    
+                    if (maze != null)
+                        maze.update();
                 }
                 
                 if (mouse.isMouseReleased())
@@ -142,72 +139,72 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
         
         //each maze will have the same number of columns/rows
-        int colrow = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeColumnsRows) * 5) + 10;
+        int total = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeColumnsRows) * 5) + 5;
         
-        labyrinth = new Labyrinth(colrow, colrow, Algorithm.values()[algorithmIndex]);
-        labyrinth.setStart(0, 0);
-        labyrinth.setFinish(colrow - 1, colrow - 1);
-        labyrinth.create();
+        if (maze != null)
+        {
+            maze.dispose();
+            maze = null;
+        }
         
+        maze = new Maze(total, algorithmIndex);
         
         //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
     }
     
     /**
      * Draw our game to the Graphics object whether resources are still loading or the game is intact
-     * @param g
+     * @param graphics
      * @return Graphics
      * @throws Exception 
      */
     @Override
-    public Graphics render(Graphics g) throws Exception
+    public Graphics render(Graphics graphics) throws Exception
     {
         //if the resources are still loading
         if (resources.isLoading())
         {
             //draw loading screen
-            resources.draw(g, main.getScreen());
+            resources.draw(graphics, main.getScreen());
         }
         else
         {
             //draw game elements
-            renderGame((Graphics2D)g);
+            renderGame((Graphics2D)graphics);
             
             //draw menu on top of the game if visible
-            renderMenu(g);
+            renderMenu(graphics);
         }
         
-        return g;
+        return graphics;
     }
     
     /**
      * Draw our game elements
-     * @param g2d Graphics2D object that game elements will be written to
+     * @param graphics2d Graphics2D object that game elements will be written to
      * @return Graphics the Graphics object with the appropriate game elements written to it
      * @throws Exception 
      */
-    private Graphics renderGame(Graphics2D g2d) throws Exception
+    private Graphics renderGame(Graphics2D graphics2d) throws Exception
     {
         //store the original font if we haven't already
         if (font == null)
-            font = g2d.getFont();
+            font = graphics2d.getFont();
         
         //set the appropriate game font
-        g2d.setFont(resources.getGameFont(Resources.GameFont.Dialog).deriveFont(Font.PLAIN, 12));
+        graphics2d.setFont(resources.getGameFont(Resources.GameFont.Dialog).deriveFont(Font.PLAIN, 12));
         
         //DRAW MAIN GAME HERE
         
-        if (labyrinth != null)
+        if (maze != null)
         {
-            labyrinth.render(g2d, getMain().getScreen());
+            maze.render(graphics2d, getMain().getScreen());
         }
         
-        
-        
         //set the original font back so the menu will be rendered correctly
-        g2d.setFont(font);
+        graphics2d.setFont(font);
         
-        return g2d;
+        return graphics2d;
     }
     
     /**
@@ -217,11 +214,11 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
      * @return Graphics The applied Graphics drawn to parameter object
      * @throws Exception 
      */
-    private Graphics renderMenu(Graphics g) throws Exception
+    private Graphics renderMenu(Graphics graphics) throws Exception
     {
         //if menu is setup draw menu
         if (menu.isSetup())
-            menu.render(g);
+            menu.render(graphics);
 
         //if menu is finished and we don't want to hide mouse cursor then draw it, or if the menu is not finished show mouse
         if (menu.hasFinished() && !Main.HIDE_MOUSE || !menu.hasFinished())
@@ -232,17 +229,17 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                 {
                     if (mouse.isMouseDragged())
                     {
-                        g.drawImage(resources.getMenuImage(Resources.MenuImage.MouseDrag), mouse.getLocation().x, mouse.getLocation().y, null);
+                        graphics.drawImage(resources.getMenuImage(Resources.MenuImage.MouseDrag), mouse.getLocation().x, mouse.getLocation().y, null);
                     }
                     else
                     {
-                        g.drawImage(resources.getMenuImage(Resources.MenuImage.Mouse), mouse.getLocation().x, mouse.getLocation().y, null);
+                        graphics.drawImage(resources.getMenuImage(Resources.MenuImage.Mouse), mouse.getLocation().x, mouse.getLocation().y, null);
                     }
                 }
             }
         }
 
-        return g;
+        return graphics;
     }
     
     public Resources getResources()

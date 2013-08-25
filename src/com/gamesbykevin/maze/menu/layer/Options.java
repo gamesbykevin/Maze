@@ -13,6 +13,12 @@ import com.gamesbykevin.maze.menu.Game;
 
 public class Options extends Layer implements LayerRules
 {
+    //maze will default to 5 row/col
+    private static final int MAZE_DIMENSION_SIZE = 5;
+    
+    //maze limit will be 30 row/col
+    private static final int MAZE_DIMENSION_LIMIT = 30;
+    
     public Options(final Engine engine) throws Exception
     {
         super(Layer.Type.SCROLL_HORIZONTAL_WEST_REPEAT, engine.getMain().getScreen());
@@ -40,7 +46,7 @@ public class Options extends Layer implements LayerRules
         super.add(Game.OptionKey.Algorithm, tmp);
         
         tmp = new Option("Cols / Rows: ");
-        for (int i=10; i <= 50; i += 5)
+        for (int i=MAZE_DIMENSION_SIZE; i <= MAZE_DIMENSION_LIMIT; i += MAZE_DIMENSION_SIZE)
         {
             tmp.add(i + "", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         }
