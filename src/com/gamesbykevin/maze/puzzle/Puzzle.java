@@ -1,4 +1,4 @@
-package com.gamesbykevin.maze.maze;
+package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
 import com.gamesbykevin.framework.input.Keyboard;
@@ -18,7 +18,7 @@ import java.util.List;
  * This is our main Maze class that controls updates and rendering
  * @author GOD
  */
-public class Maze 
+public class Puzzle 
 {
     //our maze object
     private Labyrinth labyrinth;
@@ -29,12 +29,23 @@ public class Maze
     //the Location where the maze should be centered around
     private Cell start;
     
-    private FirstPersonMaze fpm;
+    public enum Render
+    {
+        First_Person, Original, Isometric
+    }
     
-    public Maze(final int total, final int algorithmIndex) throws Exception
+    private Render render;
+    
+    private FirstPerson fp;
+    
+    public Puzzle(final int total, final int algorithmIndex, final int renderIndex) throws Exception
     {
         this.rows = total;
         this.cols = total;
+        
+        this.render = Render.values()[renderIndex];
+        
+        this.fp = new FirstPerson();
         
         this.start = new Cell();
         
@@ -43,8 +54,21 @@ public class Maze
         labyrinth.setFinish(total - 1, total - 1);
         labyrinth.create();
         labyrinth.getProgress().setDescription("Generating Maze");
-        
-        fpm = new FirstPersonMaze();
+    }
+    
+    public Render getRender()
+    {
+        return this.render;
+    }
+    
+    public void setRender(final int index)
+    {
+        setRender(Render.values()[index]);
+    }
+    
+    private void setRender(final Render render)
+    {
+        this.render = render;
     }
     
     public void dispose()
@@ -66,8 +90,7 @@ public class Maze
             }
             else
             {
-                //update first person maze
-                fpm.update(labyrinth.getLocation(start.getCol(), start.getRow()), keyboard);
+                fp.update(labyrinth.getLocation(start), keyboard);
             }
         }
     }
@@ -82,9 +105,20 @@ public class Maze
             }
             else
             {
-                //renderTopDown2D(graphics, screen);
-                //renderIsometric(graphics, screen);
-                render3D(graphics, screen);
+                switch (render)
+                {
+                    case Original:
+                        renderTopDown2D(graphics, screen);
+                        break;
+                        
+                    case Isometric:
+                        renderIsometric(graphics, screen);
+                        break;
+                        
+                    case First_Person:
+                        render3D(graphics, screen);
+                        break;
+                }
             }
         }
         
@@ -109,9 +143,9 @@ public class Maze
             final int drawX = screen.x + (cell.getCol() * cellW);
             final int drawY = screen.y + (cell.getRow() * cellH);
 
-            graphics.setColor(Color.BLUE);
+            graphics.setColor(Color.WHITE);
             graphics.fillRect(drawX, drawY, cellW, cellH);
-            graphics.setColor(Color.BLACK);
+            graphics.setColor(Color.BLUE);
 
             //draw the walls for the current Location
             for (Wall wall : cell.getWalls())
@@ -306,7 +340,10 @@ public class Maze
     
     private Graphics render3D(final Graphics graphics, final Rectangle screen) throws Exception
     {
-        fpm.render(graphics, labyrinth.getLocations());
+        graphics.setColor(Color.WHITE);
+        
+        fp.render(graphics, labyrinth.getLocations());
+        
         return graphics;
     }
 }

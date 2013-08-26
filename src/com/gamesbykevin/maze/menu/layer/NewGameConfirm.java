@@ -4,7 +4,7 @@ import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.menu.Option;
 
 import com.gamesbykevin.maze.main.Engine;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.CustomMenu;
 
 public class NewGameConfirm extends Layer implements LayerRules
 {
@@ -25,12 +25,12 @@ public class NewGameConfirm extends Layer implements LayerRules
         //setup options here
         Option tmp;
         
-        tmp = new Option(Game.LayerKey.NewGameConfirmed);
+        tmp = new Option(CustomMenu.LayerKey.NewGameConfirmed);
         tmp.add("Yes", null);
-        super.add(Game.OptionKey.NewGameConfim, tmp);
+        super.add(CustomMenu.OptionKey.NewGameConfim, tmp);
         
-        tmp = new Option(Game.LayerKey.StartGame);
+        tmp = new Option(CustomMenu.LayerKey.StartGame);
         tmp.add("No", null);
-        super.add(Game.OptionKey.NewGameDeny, tmp);
+        super.add(CustomMenu.OptionKey.NewGameDeny, tmp);
     }
 }

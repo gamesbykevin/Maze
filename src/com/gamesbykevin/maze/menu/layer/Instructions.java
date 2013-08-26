@@ -3,7 +3,7 @@ package com.gamesbykevin.maze.menu.layer;
 import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.CustomMenu;
 
 public class Instructions extends Layer implements LayerRules
 {
@@ -12,7 +12,7 @@ public class Instructions extends Layer implements LayerRules
         super(Layer.Type.NONE, engine.getMain().getScreen());
         
         setImage(engine.getResources().getMenuImage(Resources.MenuImage.Instructions1));
-        setNextLayer(Game.LayerKey.MainTitle);
+        setNextLayer(CustomMenu.LayerKey.MainTitle);
         setForce(false);
         setPause(true);
         setTimer(null);

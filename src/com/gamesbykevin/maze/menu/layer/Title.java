@@ -7,7 +7,7 @@ import com.gamesbykevin.framework.util.TimerCollection;
 import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
 import com.gamesbykevin.maze.main.Resources.MenuImage;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.CustomMenu;
 
 import java.awt.Rectangle;
 
@@ -26,7 +26,7 @@ public class Title extends Layer implements LayerRules
         setPause(false);
         
         //the next layer to go to
-        setNextLayer(Game.LayerKey.Credits);
+        setNextLayer(CustomMenu.LayerKey.Credits);
         
         //this layer will be active for 2 seconds
         setTimer(new Timer(TimerCollection.toNanoSeconds(2000L)));

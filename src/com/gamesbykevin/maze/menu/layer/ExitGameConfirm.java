@@ -3,7 +3,7 @@ package com.gamesbykevin.maze.menu.layer;
 import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.menu.Option;
 import com.gamesbykevin.maze.main.Engine;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.CustomMenu;
 
 public class ExitGameConfirm extends Layer implements LayerRules
 {
@@ -24,12 +24,12 @@ public class ExitGameConfirm extends Layer implements LayerRules
         //setup options here
         Option tmp;
         
-        tmp = new Option(Game.LayerKey.MainTitle);
+        tmp = new Option(CustomMenu.LayerKey.MainTitle);
         tmp.add("Yes", null);
-        super.add(Game.OptionKey.ExitGameConfirm, tmp);
+        super.add(CustomMenu.OptionKey.ExitGameConfirm, tmp);
         
-        tmp = new Option(Game.LayerKey.StartGame);
+        tmp = new Option(CustomMenu.LayerKey.StartGame);
         tmp.add("No", null);
-        super.add(Game.OptionKey.ExitGameDeny, tmp);
+        super.add(CustomMenu.OptionKey.ExitGameDeny, tmp);
     }
 }

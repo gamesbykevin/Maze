@@ -4,7 +4,8 @@ import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.menu.Option;
 import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.puzzle.Puzzle;
+import com.gamesbykevin.maze.menu.CustomMenu;
 
 public class OptionsInGame extends Layer implements LayerRules
 {
@@ -25,27 +26,33 @@ public class OptionsInGame extends Layer implements LayerRules
         //setup options here
         Option tmp;
         
-        
-        tmp = new Option(Game.LayerKey.StartGame);
+        tmp = new Option(CustomMenu.LayerKey.StartGame);
         tmp.add("Resume", null);
-        super.add(Game.OptionKey.Resume, tmp);
+        super.add(CustomMenu.OptionKey.Resume, tmp);
+        
+        tmp = new Option("Render: ");
+        for (Puzzle.Render render : Puzzle.Render.values())
+        {
+            tmp.add(render.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(CustomMenu.OptionKey.Render, tmp);
         
         tmp = new Option("Sound: ");
         tmp.add("On", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         tmp.add("Off",engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
-        super.add(Game.OptionKey.Sound, tmp);
+        super.add(CustomMenu.OptionKey.Sound, tmp);
         
         tmp = new Option("FullScreen: ");
         tmp.add("Off",engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         tmp.add("On", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
-        super.add(Game.OptionKey.FullScreen, tmp);
+        super.add(CustomMenu.OptionKey.FullScreen, tmp);
         
-        tmp = new Option(Game.LayerKey.NewGameConfirm);
+        tmp = new Option(CustomMenu.LayerKey.NewGameConfirm);
         tmp.add("New Game", null);
-        super.add(Game.OptionKey.NewGame, tmp);
+        super.add(CustomMenu.OptionKey.NewGame, tmp);
 
-        tmp = new Option(Game.LayerKey.ExitGameConfirm);
+        tmp = new Option(CustomMenu.LayerKey.ExitGameConfirm);
         tmp.add("Exit Game", null);
-        super.add(Game.OptionKey.ExitGame, tmp);
+        super.add(CustomMenu.OptionKey.ExitGame, tmp);
     }
 }

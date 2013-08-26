@@ -7,7 +7,7 @@ import com.gamesbykevin.framework.util.TimerCollection;
 
 import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
-import com.gamesbykevin.maze.menu.Game;
+import com.gamesbykevin.maze.menu.CustomMenu;
 import com.gamesbykevin.maze.shared.Shared;
 
 public class MainTitle extends Layer implements LayerRules
@@ -32,32 +32,32 @@ public class MainTitle extends Layer implements LayerRules
         Option tmp;
         
         //create start game option with next layer specified
-        tmp = new Option(Game.LayerKey.StartGame);
+        tmp = new Option(CustomMenu.LayerKey.StartGame);
         
         //add option selection to option
         tmp.add("Start Game", null);
         
         //add option with specified unique key to this Layer
-        super.add(Game.OptionKey.StartGame, tmp);
+        super.add(CustomMenu.OptionKey.StartGame, tmp);
         
         
-        tmp = new Option(Game.LayerKey.Options);
+        tmp = new Option(CustomMenu.LayerKey.Options);
         tmp.add("Options", null);
-        super.add(Game.OptionKey.Options, tmp);
+        super.add(CustomMenu.OptionKey.Options, tmp);
         
         
-        tmp = new Option(Game.LayerKey.Controls);
+        tmp = new Option(CustomMenu.LayerKey.Controls);
         tmp.add("Controls", null);
-        super.add(Game.OptionKey.Controls, tmp);
+        super.add(CustomMenu.OptionKey.Controls, tmp);
         
         
-        tmp = new Option(Game.LayerKey.Instructions);
+        tmp = new Option(CustomMenu.LayerKey.Instructions);
         tmp.add("Instructions", null);
-        super.add(Game.OptionKey.Instructions, tmp);
+        super.add(CustomMenu.OptionKey.Instructions, tmp);
         
         
-        tmp = new Option(Game.LayerKey.Credits);
+        tmp = new Option(CustomMenu.LayerKey.Credits);
         tmp.add("Credits", null);
-        super.add(Game.OptionKey.Credits, tmp);
+        super.add(CustomMenu.OptionKey.Credits, tmp);
     }    
 }

@@ -4,6 +4,7 @@ import com.gamesbykevin.maze.main.Engine;
 
 import com.gamesbykevin.framework.display.FullScreen;
 import com.gamesbykevin.framework.menu.*;
+import com.gamesbykevin.maze.puzzle.Puzzle.Render;
 import com.gamesbykevin.maze.menu.layer.*;
 
 import java.awt.Graphics;
@@ -13,7 +14,7 @@ import java.awt.event.KeyEvent;
  * Game Menu
  * @author GOD
  */
-public class Game extends Menu
+public class CustomMenu extends Menu
 {
     //enabled = is full screen turned on, reset game = create a new game, focus = does the container have focus
     private boolean enabled = false, reset = true, focus = false;
@@ -27,7 +28,7 @@ public class Game extends Menu
     //unique object to identify each Option
     public enum OptionKey
     {
-        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, MazeColumnsRows
+        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, MazeDimensions, Render
     }
     
     //unique key to indentify each Layer
@@ -45,7 +46,7 @@ public class Game extends Menu
     //assuming the menu isn't re-arranged the index will be 1
     private static final int FULL_SCREEN_ENABLED = 1;
     
-    public Game(final Engine engine) throws Exception
+    public CustomMenu(final Engine engine) throws Exception
     {
         super(engine.getMain().getScreen());
         
@@ -88,13 +89,14 @@ public class Game extends Menu
                 engine.getResources().stopAllSound();
             }
             
-            int soundIndex = -1, fullscreenIndex = -1;
+            int soundIndex = -1, fullscreenIndex = -1, renderIndex = -1;
             
             //if on the options screen check if sound/fullScreen enabled
             if (super.hasCurrent(LayerKey.Options))
             {
                 soundIndex      = getOptionSelectionIndex(LayerKey.Options, OptionKey.Sound);
                 fullscreenIndex = getOptionSelectionIndex(LayerKey.Options, OptionKey.FullScreen);
+                renderIndex     = getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
             }
             
             //if on the in-game options screen check if sound/fullScreen enabled
@@ -102,6 +104,7 @@ public class Game extends Menu
             {
                 soundIndex      = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Sound);
                 fullscreenIndex = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.FullScreen);
+                renderIndex     = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Render);
             }
             
             //if starting a new game change layer, stop sound
@@ -127,6 +130,14 @@ public class Game extends Menu
                     fullScreen.switchFullScreen(engine.getMain().getApplet(), engine.getMain().getPanel());
                     enabled = !enabled;
                     engine.getMain().setFullScreen();
+                }
+            }
+            
+            if (renderIndex != NO_VALUE)
+            {
+                if (Render.values()[renderIndex] != engine.getPuzzle().getRender())
+                {
+                    engine.getPuzzle().setRender(renderIndex);
                 }
             }
             

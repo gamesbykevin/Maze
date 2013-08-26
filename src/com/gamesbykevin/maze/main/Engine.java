@@ -3,10 +3,10 @@ package com.gamesbykevin.maze.main;
 import com.gamesbykevin.framework.input.*;
 import com.gamesbykevin.framework.input.Keyboard;
 
-import com.gamesbykevin.maze.maze.Maze;
-import com.gamesbykevin.maze.menu.Game;
-import com.gamesbykevin.maze.menu.Game.LayerKey;
-import com.gamesbykevin.maze.menu.Game.OptionKey;
+import com.gamesbykevin.maze.puzzle.Puzzle;
+import com.gamesbykevin.maze.menu.CustomMenu;
+import com.gamesbykevin.maze.menu.CustomMenu.LayerKey;
+import com.gamesbykevin.maze.menu.CustomMenu.OptionKey;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -19,7 +19,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     private Main main;
     
     //access this menu here
-    private Game menu;
+    private CustomMenu menu;
     
     //object that contains all image/audio resources in the game
     private Resources resources;
@@ -33,7 +33,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     //original font
     private Font font;
     
-    private Maze maze;
+    private Puzzle puzzle;
     
     /**
      * The Engine that contains the game/menu objects
@@ -87,7 +87,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
 
                 //resources are now loaded so create the menu
                 if (!resources.isLoading())
-                    menu = new Game(this);
+                    menu = new CustomMenu(this);
             }
             else
             {
@@ -105,8 +105,8 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                 //if the menu is finished and the window has focus
                 if (menu.hasFinished() && menu.hasFocus())
                 {
-                    if (maze != null)
-                        maze.update(getKeyboard());
+                    if (puzzle != null)
+                        puzzle.update(getKeyboard());
                 }
                 
                 if (mouse.isMouseReleased())
@@ -139,15 +139,18 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
         
         //each maze will have the same number of columns/rows
-        int total = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeColumnsRows) * 5) + 5;
+        final int total = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeDimensions) * 5) + 5;
         
-        if (maze != null)
+        //how will we draw the maze
+        final int renderIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
+        
+        if (puzzle != null)
         {
-            maze.dispose();
-            maze = null;
+            puzzle.dispose();
+            puzzle = null;
         }
         
-        maze = new Maze(total, algorithmIndex);
+        puzzle = new Puzzle(total, algorithmIndex, renderIndex);
         
         //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
     }
@@ -196,9 +199,9 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         
         //DRAW MAIN GAME HERE
         
-        if (maze != null)
+        if (puzzle != null)
         {
-            maze.render(graphics2d, getMain().getScreen());
+            puzzle.render(graphics2d, getMain().getScreen());
         }
         
         //set the original font back so the menu will be rendered correctly
@@ -240,6 +243,11 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         }
 
         return graphics;
+    }
+    
+    public Puzzle getPuzzle()
+    {
+        return this.puzzle;
     }
     
     public Resources getResources()
