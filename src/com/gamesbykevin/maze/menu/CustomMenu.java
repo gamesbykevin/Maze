@@ -133,7 +133,8 @@ public class CustomMenu extends Menu
                 }
             }
             
-            if (renderIndex != NO_VALUE)
+            //if the render option has a value and the puzzle has been created
+            if (renderIndex != NO_VALUE && engine.getPuzzle() != null)
             {
                 if (Render.values()[renderIndex] != engine.getPuzzle().getRender())
                 {

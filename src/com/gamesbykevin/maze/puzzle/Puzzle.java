@@ -1,14 +1,16 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
-import com.gamesbykevin.framework.input.Keyboard;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
+import com.gamesbykevin.maze.main.Engine;
+
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -26,17 +28,19 @@ public class Puzzle
     //dimensions of maze
     private final int rows, cols;
     
-    //the Location where the maze should be centered around
-    private Cell start;
+    //the Location where the user is
+    private Cell current;
     
     public enum Render
     {
-        First_Person, Original, Isometric
+        Original, Isometric, First_Person
     }
     
+    //the way we are to draw the maze
     private Render render;
     
-    private FirstPerson fp;
+    //for rendering the 3d maze
+    private FirstPerson firstPerson;
     
     public Puzzle(final int total, final int algorithmIndex, final int renderIndex) throws Exception
     {
@@ -45,9 +49,9 @@ public class Puzzle
         
         this.render = Render.values()[renderIndex];
         
-        this.fp = new FirstPerson();
+        this.firstPerson = new FirstPerson();
         
-        this.start = new Cell();
+        this.current = new Cell();
         
         labyrinth = new Labyrinth(total, total, Algorithm.values()[algorithmIndex]);
         labyrinth.setStart(0, 0);
@@ -79,7 +83,12 @@ public class Puzzle
         labyrinth = null;
     }
     
-    public void update(Keyboard keyboard) throws Exception
+    /**
+     * Update the creation of the maze. If the maze has already been generated update the first person object
+     * @param engine
+     * @throws Exception 
+     */
+    public void update(final Engine engine) throws Exception
     {
         if (labyrinth != null)
         {
@@ -90,11 +99,21 @@ public class Puzzle
             }
             else
             {
-                fp.update(labyrinth.getLocation(start), keyboard);
+                current.setCol(firstPerson.getColumn());
+                current.setRow(firstPerson.getRow());
+                
+                firstPerson.update(labyrinth.getLocation(current), engine.getKeyboard());
             }
         }
     }
     
+    /**
+     * Draw the labyrinth. If it is still in process of being created draw the progress. 
+     * @param graphics 
+     * @param screen 
+     * @return Graphics 
+     * @throws Exception 
+     */
     public Graphics render(final Graphics graphics, final Rectangle screen) throws Exception
     {
         if (labyrinth != null)
@@ -183,9 +202,9 @@ public class Puzzle
      */
     private Graphics renderIsometric(final Graphics graphics, final Rectangle screen) throws Exception
     {
-        //for isometric the width should be twice the height
-        final int cellW = 40;
-        final int cellH = 40;
+        //for isometric the width could be twice the height
+        final int cellW = screen.width  / cols;
+        final int cellH = screen.height / rows;
         
         Polygon polygon = null;
         
@@ -219,7 +238,7 @@ public class Puzzle
             
             polygon = new Polygon(x, y, x.length);
             
-            if (screen.contains(polygon.getBounds()))
+            if (screen.intersects(polygon.getBounds()))
             {
                 graphics.setColor(Color.white);
                 graphics.fillPolygon(polygon);
@@ -239,7 +258,7 @@ public class Puzzle
      * @param polygon
      * @param graphics
      * @param cellH
-     * @return 
+     * @return Graphics
      */
     private Graphics drawIsometricWalls(final Location cell, final Polygon polygon, final Graphics graphics, final int cellH)
     {
@@ -248,11 +267,19 @@ public class Puzzle
         int[] x = new int[4];
         int[] y = new int[4];
         
+        //the height of the wall will be 33% of the cell height
         final int wallH = (cellH / 3);
         
         List<Wall> tmpWalls = new ArrayList<>();
         
-        //add the walls in this order so they are drawn appropriately
+        /*
+         * Add the walls in this order so they are drawn appropriately to the user
+         * 1. North
+         * 2. West
+         * 3. East
+         * 4. South
+         */
+        
         if (cell.hasWall(Wall.North))
             tmpWalls.add(Wall.North);
         if (cell.hasWall(Wall.West))
@@ -334,15 +361,24 @@ public class Puzzle
             graphics.setColor(Color.BLACK);
             graphics.drawPolygon(tmp);
         }
-            
+        
         return graphics;
     }
     
+    /**
+     * Here we will draw the maze on a 3d canvas
+     * @param graphics 
+     * @param screen 
+     * @return Graphics 
+     * @throws Exception 
+     */
     private Graphics render3D(final Graphics graphics, final Rectangle screen) throws Exception
     {
-        graphics.setColor(Color.WHITE);
+        //background will be black
+        graphics.setColor(Color.BLACK);
+        graphics.fillRect(screen.x, screen.y, screen.width, screen.height);
         
-        fp.render(graphics, labyrinth.getLocations());
+        firstPerson.render((Graphics2D)graphics, labyrinth.getLocations());
         
         return graphics;
     }
