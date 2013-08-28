@@ -11,7 +11,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
 /**
- * Game Menu
+ * Custom Menu
  * @author GOD
  */
 public class CustomMenu extends Menu
@@ -28,13 +28,16 @@ public class CustomMenu extends Menu
     //unique object to identify each Option
     public enum OptionKey
     {
-        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, MazeDimensions, Render
+        Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, 
+        NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, 
+        MazeDimensions, Render
     }
     
     //unique key to indentify each Layer
     public enum LayerKey 
     {
-        Title, Credits, MainTitle, Options, Controls, Instructions, OptionsInGame, NewGameConfirm, ExitGameConfirm, NoFocus, StartGame, NewGameConfirmed
+        Title, Credits, MainTitle, Options, Controls, Instructions1, Instructions2, Instructions3, 
+        OptionsInGame, NewGameConfirm, ExitGameConfirm, NoFocus, StartGame, NewGameConfirmed
     }
     
     //if index has a value it will be greater than -1
@@ -56,7 +59,9 @@ public class CustomMenu extends Menu
         super.add(LayerKey.MainTitle,       new MainTitle(engine));
         super.add(LayerKey.Options,         new Options(engine));
         super.add(LayerKey.Controls,        new Controls(engine));
-        super.add(LayerKey.Instructions,    new Instructions(engine));
+        super.add(LayerKey.Instructions1,   new Instructions1(engine));
+        super.add(LayerKey.Instructions2,   new Instructions2(engine));
+        super.add(LayerKey.Instructions3,   new Instructions3(engine));
         super.add(LayerKey.OptionsInGame,   new OptionsInGame(engine));
         super.add(LayerKey.NewGameConfirm,  new NewGameConfirm(engine));
         super.add(LayerKey.ExitGameConfirm, new ExitGameConfirm(engine));
@@ -107,7 +112,7 @@ public class CustomMenu extends Menu
                 renderIndex     = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Render);
             }
             
-            //if starting a new game change layer, stop sound
+            //if starting a new game change layer, stop all sound
             if (super.hasCurrent(LayerKey.NewGameConfirmed))
             {
                 super.setLayer(LayerKey.StartGame);
@@ -115,21 +120,31 @@ public class CustomMenu extends Menu
                 engine.getResources().stopAllSound();
             }
             
+            //if the sound selection value is valid
             if (soundIndex != NO_VALUE)
             {
+                //set all audio collections sound enabled on/off
                 engine.getResources().setAudioEnabled(soundIndex == SOUND_ENABLED);
+                
+                //make sure this Option in all of the Layer(s) have the same value
+                setOptionSelectionIndex(OptionKey.Sound, soundIndex);
             }
             
+            //if the full screen selection value is valid
             if (fullscreenIndex != NO_VALUE)
             {
                 if (fullScreen == null)
                     fullScreen = new FullScreen();
                 
+                //if the value is set to enabled and we previously have not enabled the full screen or vise versa, make the switch
                 if (fullscreenIndex == FULL_SCREEN_ENABLED && !enabled || fullscreenIndex != FULL_SCREEN_ENABLED && enabled)
                 {
                     fullScreen.switchFullScreen(engine.getMain().getApplet(), engine.getMain().getPanel());
                     enabled = !enabled;
                     engine.getMain().setFullScreen();
+                    
+                    //make sure this Option in all of the Layer(s) have the same value
+                    setOptionSelectionIndex(OptionKey.FullScreen, fullscreenIndex);
                 }
             }
             
@@ -139,6 +154,9 @@ public class CustomMenu extends Menu
                 if (Render.values()[renderIndex] != engine.getPuzzle().getRender())
                 {
                     engine.getPuzzle().setRender(renderIndex);
+                    
+                    //make sure all Render Options have the same value
+                    setOptionSelectionIndex(OptionKey.Render, renderIndex);
                 }
             }
             

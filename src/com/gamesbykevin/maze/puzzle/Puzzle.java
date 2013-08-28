@@ -8,6 +8,7 @@ import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
 import com.gamesbykevin.maze.main.Engine;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -30,6 +31,12 @@ public class Puzzle
     
     //the Location where the user is
     private Cell current;
+    
+    //we use this Stroke to add some thickness to the walls
+    public static final BasicStroke STROKE = new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+    
+    //store the original stroke
+    private BasicStroke original;
     
     public enum Render
     {
@@ -114,7 +121,7 @@ public class Puzzle
      * @return Graphics 
      * @throws Exception 
      */
-    public Graphics render(final Graphics graphics, final Rectangle screen) throws Exception
+    public Graphics render(final Graphics2D graphics, final Rectangle screen) throws Exception
     {
         if (labyrinth != null)
         {
@@ -124,17 +131,26 @@ public class Puzzle
             }
             else
             {
+                //store the original stroke because we only want the 3d walls to be thick
+                if (original == null)
+                    original = (BasicStroke)graphics.getStroke();
+                
                 switch (render)
                 {
                     case Original:
+                        graphics.setStroke(original);
                         renderTopDown2D(graphics, screen);
                         break;
                         
                     case Isometric:
+                        graphics.setStroke(original);
                         renderIsometric(graphics, screen);
                         break;
                         
                     case First_Person:
+                        //walls drawn will have some thickness
+                        graphics.setStroke(STROKE);
+                        
                         render3D(graphics, screen);
                         break;
                 }

@@ -23,9 +23,6 @@ public class FirstPerson
     
     //the speed to move amongst the x,y axis
     private double speed;
-
-    //we use this Stroke to add some thickness to the walls
-    private static final BasicStroke STROKE = new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     
     //if these coordinated are in the center we will view level from a first person perspetive
     private static final int ORIGIN_X = 200;
@@ -186,7 +183,7 @@ public class FirstPerson
         {
             angle -= 2 * Math.PI;
         }
-
+        
         px += -.04 * speed * Math.sin(angle);
         py += -.04 * speed * Math.cos(angle);
 
@@ -211,17 +208,19 @@ public class FirstPerson
             keyboard.reset();
         }
         
+        angularVelocity = 0;
+        
         if (keyboard.hasKeyPressed(KeyEvent.VK_LEFT))
             angularVelocity = 1;
+        
+        if (keyboard.hasKeyPressed(KeyEvent.VK_RIGHT))
+            angularVelocity = -1;
         
         if (keyboard.hasKeyReleased(KeyEvent.VK_LEFT))
         {
             angularVelocity = 0;
             keyboard.reset();
         }
-        
-        if (keyboard.hasKeyPressed(KeyEvent.VK_RIGHT))
-            angularVelocity = -1;
         
         if (keyboard.hasKeyReleased(KeyEvent.VK_RIGHT))
         {
@@ -244,11 +243,14 @@ public class FirstPerson
         //draw the floor for each Location
         for (Location location : locations)
         {
-            drawFloor(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol(), location.getRow() + 1), new Corner(location.getCol() + 1, location.getRow()), new Corner(location.getCol() + 1, location.getRow() + 1), (Graphics2D)graphics);
+            Corner westStart = new Corner(location.getCol(), location.getRow());
+            Corner westEnd   = new Corner(location.getCol(), location.getRow() + 1);
+            
+            Corner eastStart = new Corner(location.getCol() + 1, location.getRow());
+            Corner eastEnd   = new Corner(location.getCol() + 1, location.getRow() + 1);
+            
+            boolean result = drawFloor(westStart, westEnd, eastStart, eastEnd, (Graphics2D)graphics);
         }
-
-        //set the stroke so the drawn line will appear thick
-        graphics.setStroke(STROKE);
         
         //the wall color will be blue
         graphics.setColor(Color.BLUE);
@@ -260,19 +262,27 @@ public class FirstPerson
             
             //the east wall is 1 column to the right of the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.East))
+            {
                 drawWall(new Corner(location.getCol() + 1, location.getRow()), new Corner(location.getCol() + 1, location.getRow() + 1), (Graphics2D)graphics);
+            }
             
             //the west wall is the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.West))
+            {
                 drawWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol(), location.getRow() + 1), (Graphics2D)graphics);
+            }
             
             //the north wall is the current row and extends from the current column to the next column east
             if (location.hasWall(Wall.North))
+            {
                 drawWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol() + 1, location.getRow()), (Graphics2D)graphics);
+            }
             
             //the south wall is the row south of the current and extends from the current column to the next column east
             if (location.hasWall(Wall.South))
+            {
                 drawWall(new Corner(location.getCol(), location.getRow() + 1), new Corner(location.getCol() + 1, location.getRow() + 1), (Graphics2D)graphics);
+            }
         }
         
         return graphics;
@@ -285,82 +295,36 @@ public class FirstPerson
      * @param start1 East wall start point
      * @param end1   East wall finish point
      * @param graphics Our graphics object
+     * 
+     * @return boolean True if the floor was drawn
      */
-    private void drawFloor(Corner start, Corner end, Corner start1, Corner end1, Graphics graphics)
+    private boolean drawFloor(Corner start1, Corner end1, Corner start2, Corner end2, Graphics graphics)
     {
         //only draw if the coordinates are on the screen
-        if(start.sy > 0 && end.sy > 0 && start1.sy > 0 && end1.sy > 0)
+        if(start1.sy > 0 && end1.sy > 0 && start2.sy > 0 && end2.sy > 0)
         {
             int[] x = new int[4];
             int[] y = new int[4];
             
-            x[0] = (int)(ORIGIN_X + start.sx);
-            y[0] = (int)(ORIGIN_Y + start.sy);
+            x[0] = (int)(ORIGIN_X + start1.sx);
+            y[0] = (int)(ORIGIN_Y + start1.sy);
             
-            x[1] = (int)(ORIGIN_X + end.sx);
-            y[1] = (int)(ORIGIN_Y + end.sy);
+            x[1] = (int)(ORIGIN_X + end1.sx);
+            y[1] = (int)(ORIGIN_Y + end1.sy);
             
-            x[2] = (int)(ORIGIN_X + end1.sx);
-            y[2] = (int)(ORIGIN_Y + end1.sy);
+            x[2] = (int)(ORIGIN_X + end2.sx);
+            y[2] = (int)(ORIGIN_Y + end2.sy);
             
-            x[3] = (int)(ORIGIN_X + start1.sx);
-            y[3] = (int)(ORIGIN_Y + start1.sy);
+            x[3] = (int)(ORIGIN_X + start2.sx);
+            y[3] = (int)(ORIGIN_Y + start2.sy);
             
             graphics.fillPolygon(new Polygon(x, y, x.length));
+            
+            return true;
         }
         else
         {
-            //still check to see if we can draw part of cell
-            
-            
-            //wall is completely behind so we do not draw
-            if(start.sy < 0 && end.sy < 0) 
-                return;
-            //wall is completely behind so we do not draw
-            if(start1.sy < 0 && end1.sy < 0) 
-                return;
-            
-            //make sure that start ought to be to the left of end on the screen
-            if(!isWallClockwise(start, end)) 
-            {
-                Corner tmp = start;
-                start = end;
-                end = tmp;
-            }
-            
-            //make sure that start ought to be to the left of end on the screen
-            if(!isWallClockwise(start1, end1)) 
-            {
-                Corner tmp = start1;
-                start1 = end1;
-                end1 = tmp;
-            }
-            
-            // Start of wall is behind me or too far left to see; replace start
-            if(start.sy < 0 || start.sx < -ORIGIN_X) 
-                start = new Corner(start, end, -ORIGIN_X);
-
-            // End of wall is behind me or too far right to see; replace end
-            if(end.sy < 0 || end.sx > ORIGIN_X) 
-                end = new Corner(start, end, ORIGIN_X);
-
-            if(start.sy > 0 && end.sy > 0 && start.sx < end.sx) 
-            {
-                graphics.drawLine((int)(ORIGIN_X + start.sx), (int)(ORIGIN_Y + start.sy), (int)(ORIGIN_X + end.sx), (int)(ORIGIN_Y + end.sy));
-            }
-            
-            // Start of wall is behind me or too far left to see; replace start
-            if(start1.sy < 0 || start1.sx < -ORIGIN_X) 
-                start1 = new Corner(start1, end1, -ORIGIN_X);
-
-            // End of wall is behind me or too far right to see; replace end
-            if(end1.sy < 0 || end1.sx > ORIGIN_X) 
-                end1 = new Corner(start1, end1, ORIGIN_X);
-
-            if(start1.sy > 0 && end1.sy > 0 && start1.sx < end1.sx) 
-            {
-                graphics.drawLine((int)(ORIGIN_X + start1.sx), (int)(ORIGIN_Y + start1.sy), (int)(ORIGIN_X + end1.sx), (int)(ORIGIN_Y + end1.sy));
-            }
+            return false;
         }
     }
     
@@ -384,14 +348,15 @@ public class FirstPerson
             end = tmp;
         }
 
-        // Start of wall is behind me or too far left to see; replace start
+        //if the start of the wall is behind the user or too far left, replace start
         if(start.sy < 0 || start.sx < -ORIGIN_X) 
             start = new Corner(start, end, -ORIGIN_X);
 
-        // End of wall is behind me or too far right to see; replace end
-        if(end.sy < 0 || end.sx > ORIGIN_X) 
+        //if the end of the wall is behind the user or too far right, replace end
+        if(end.sy < 0 || end.sx > ORIGIN_X)
             end = new Corner(start, end, ORIGIN_X);
 
+        //after adjustments are the coordinates within the boundary so we can draw the line
         if(start.sy > 0 && end.sy > 0 && start.sx < end.sx) 
         {
             graphics.drawLine((int)(ORIGIN_X + start.sx), (int)(ORIGIN_Y + start.sy), (int)(ORIGIN_X + end.sx), (int)(ORIGIN_Y + end.sy));

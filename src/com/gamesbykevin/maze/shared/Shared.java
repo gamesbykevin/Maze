@@ -27,10 +27,10 @@ public class Shared
     public static final int DEFAULT_UPS = 60;
     
     //how many frames per second, controls how many images are rendered
-    public static final int DEFAULT_FPS = 90;
+    public static final int DEFAULT_FPS = 30;
     
     //what is the name of our game
-    public static final String GAME_NAME = "Maze";
+    public static final String GAME_NAME = "Maze Adventure";
     
     //blank cursor created here to hide the mouse cursor
     public static final Cursor CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank cursor");

@@ -144,6 +144,9 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         //how will we draw the maze
         final int renderIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
         
+        //make sure all Render Options have the same value
+        menu.setOptionSelectionIndex(OptionKey.Render, renderIndex);
+        
         if (puzzle != null)
         {
             puzzle.dispose();
@@ -188,26 +191,26 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
      * @return Graphics the Graphics object with the appropriate game elements written to it
      * @throws Exception 
      */
-    private Graphics renderGame(Graphics2D graphics2d) throws Exception
+    private Graphics renderGame(Graphics2D graphics) throws Exception
     {
         //store the original font if we haven't already
         if (font == null)
-            font = graphics2d.getFont();
+            font = graphics.getFont();
         
         //set the appropriate game font
-        graphics2d.setFont(resources.getGameFont(Resources.GameFont.Dialog).deriveFont(Font.PLAIN, 12));
+        graphics.setFont(resources.getGameFont(Resources.GameFont.Dialog).deriveFont(Font.PLAIN, 12));
         
         //DRAW MAIN GAME HERE
         
         if (puzzle != null)
         {
-            puzzle.render(graphics2d, getMain().getScreen());
+            puzzle.render(graphics, getMain().getScreen());
         }
         
         //set the original font back so the menu will be rendered correctly
-        graphics2d.setFont(font);
+        graphics.setFont(font);
         
-        return graphics2d;
+        return graphics;
     }
     
     /**

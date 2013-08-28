@@ -51,7 +51,7 @@ public class MainTitle extends Layer implements LayerRules
         super.add(CustomMenu.OptionKey.Controls, tmp);
         
         
-        tmp = new Option(CustomMenu.LayerKey.Instructions);
+        tmp = new Option(CustomMenu.LayerKey.Instructions1);
         tmp.add("Instructions", null);
         super.add(CustomMenu.OptionKey.Instructions, tmp);
         

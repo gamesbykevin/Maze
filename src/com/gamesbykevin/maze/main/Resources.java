@@ -34,7 +34,8 @@ public class Resources
     
     public enum MenuImage
     {
-        TitleScreen, Credits, AppletFocus, TitleBackground, Mouse, MouseDrag, Instructions1, Controls
+        TitleScreen, Credits, AppletFocus, TitleBackground, Mouse, MouseDrag, Controls, 
+        Instructions1, Instructions2, Instructions3
     }
     
     public enum GameFont
@@ -106,7 +107,7 @@ public class Resources
      */
     public void stopAllSound()
     {
-        
+        getResources(Type.MenuAudio).stopAllAudio();
     }
     
     public void update(final Class source) throws Exception
@@ -135,16 +136,22 @@ public class Resources
      */
     public boolean isAudioEnabled()
     {
-        return true;
-        //return getResources(Type.GameAudioEffects).isAudioEnabled() || getResources(Type.GameAudioMusic).isAudioEnabled();
+        //if the menu audio is not enabled the remaining audio collections should not be as well
+        return getResources(Type.MenuAudio).isAudioEnabled();
     }
     
     /**
-     * Set the audio enabled
-     * @param soundEnabled 
+     * Set the audio enabled.
+     * All existing audio collections here will have the audio enabled value set.
+     * 
+     * @param boolean Is the audio enabled 
      */
     public void setAudioEnabled(boolean enabled)
     {
+        getResources(Type.MenuAudio).setAudioEnabled(enabled);
+        
+        //all other existing audio collections should be disabled here as well
+        
     }
     
     public void dispose()
