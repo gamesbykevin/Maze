@@ -21,7 +21,7 @@ public class Resources
     //collections of resources
     private enum Type
     {
-        MenuImage, MenuAudio, GameFont 
+        MenuImage, MenuAudio, GameFont, GameImage
     }
     
     //root directory of all resources
@@ -30,6 +30,11 @@ public class Resources
     public enum MenuAudio
     {
         MenuChange
+    }
+    
+    public enum GameImage
+    {
+        
     }
     
     public enum MenuImage
@@ -52,6 +57,9 @@ public class Resources
         
         //load all menu images
         add(Type.MenuImage, (Object[])MenuImage.values(), RESOURCE_DIR + "images/menu/{0}.gif", "Loading Menu Image Resources", Manager.Type.Image);
+        
+        //load all game images
+        //add(Type.GameImage, (Object[])GameImage.values(), RESOURCE_DIR + "images/game/{0}.gif", "Loading Game Image Resources", Manager.Type.Image);
         
         //load all game fonts
         add(Type.GameFont, (Object[])GameFont.values(), RESOURCE_DIR + "font/{0}.ttf", "Loading Game Font Resources", Manager.Type.Font);
@@ -97,6 +105,11 @@ public class Resources
         return getResources(Type.MenuImage).getImage(key);
     }
     
+    public Image getGameImage(final Object key)
+    {
+        return getResources(Type.GameImage).getImage(key);
+    }
+        
     public Audio getMenuAudio(final Object key)
     {
         return getResources(Type.MenuAudio).getAudio(key);

@@ -7,6 +7,7 @@ import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
 import com.gamesbykevin.maze.main.Engine;
+import com.gamesbykevin.maze.main.Resources;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -40,7 +41,7 @@ public class Puzzle
     
     public enum Render
     {
-        Original, Isometric, First_Person
+        First_Person, Original, Isometric
     }
     
     //the way we are to draw the maze
@@ -49,22 +50,47 @@ public class Puzzle
     //for rendering the 3d maze
     private FirstPerson firstPerson;
     
+    //for rendering the isometric maze
+    private Isometric isometric;
+    
+    //the original rendering for the maze
+    private TopDown topDown;
+    
+    /**
+     * Create a new maze
+     * @param total The number of rows/columns
+     * @param algorithmIndex Algorithm used to generate maze
+     * @param renderIndex The way the maze is to be displayed
+     * 
+     * @throws Exception 
+     */
     public Puzzle(final int total, final int algorithmIndex, final int renderIndex) throws Exception
     {
+        //the rows and cols are always
         this.rows = total;
         this.cols = total;
         
+        //the current render to be displayed
         this.render = Render.values()[renderIndex];
         
-        this.firstPerson = new FirstPerson();
-        
+        //current position
         this.current = new Cell();
         
+        //create a new labyrinth with the specific dimensions and algorithm
         labyrinth = new Labyrinth(total, total, Algorithm.values()[algorithmIndex]);
         labyrinth.setStart(0, 0);
-        labyrinth.setFinish(total - 1, total - 1);
+        //labyrinth.setFinish(total - 1, total - 1);
         labyrinth.create();
         labyrinth.getProgress().setDescription("Generating Maze");
+        
+        //for rendering the 3d maze
+        this.firstPerson = new FirstPerson();
+        
+        //for rendering the isometric maze
+        this.isometric = new Isometric();
+        
+        //the original rendering for the maze
+        this.topDown = new TopDown();
     }
     
     public Render getRender()
@@ -128,273 +154,37 @@ public class Puzzle
             if (!labyrinth.isComplete())
             {
                 labyrinth.renderProgress(graphics, screen);
-            }
-            else
-            {
+                
                 //store the original stroke because we only want the 3d walls to be thick
                 if (original == null)
                     original = (BasicStroke)graphics.getStroke();
+            }
+            else
+            {
+                //background will be black
+                graphics.setColor(Color.BLACK);
+                graphics.fillRect(screen.x, screen.y, screen.width, screen.height);
                 
                 switch (render)
                 {
                     case Original:
                         graphics.setStroke(original);
-                        renderTopDown2D(graphics, screen);
+                        topDown.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish(), current);
                         break;
                         
                     case Isometric:
                         graphics.setStroke(original);
-                        renderIsometric(graphics, screen);
+                        isometric.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish(), current);
                         break;
                         
                     case First_Person:
                         //walls drawn will have some thickness
                         graphics.setStroke(STROKE);
-                        
-                        render3D(graphics, screen);
+                        firstPerson.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish());
                         break;
                 }
             }
         }
-        
-        return graphics;
-    }
-    
-    /**
-     * Draw the original top-down 2d version of the maze
-     * @param graphics
-     * @param screen Container which maze will be drawn within
-     * @return Graphics
-     * @throws Exception 
-     */
-    private Graphics renderTopDown2D(final Graphics graphics, final Rectangle screen) throws Exception
-    {
-        final int cellW = screen.width  / cols;
-        final int cellH = screen.height / rows;
-
-        //draw the walls of each cell
-        for (Location cell : labyrinth.getLocations())
-        {
-            final int drawX = screen.x + (cell.getCol() * cellW);
-            final int drawY = screen.y + (cell.getRow() * cellH);
-
-            graphics.setColor(Color.WHITE);
-            graphics.fillRect(drawX, drawY, cellW, cellH);
-            graphics.setColor(Color.BLUE);
-
-            //draw the walls for the current Location
-            for (Wall wall : cell.getWalls())
-            {
-                switch (wall)
-                {
-                    case West:
-                        graphics.drawLine(drawX, drawY, drawX, drawY + cellH - 1);
-                        break;
-
-                    case East:
-                        graphics.drawLine(drawX + cellW - 1, drawY, drawX + cellW - 1, drawY + cellH - 1);
-                        break;
-
-                    case North:
-                        graphics.drawLine(drawX, drawY, drawX + cellW - 1, drawY);
-                        break;
-
-                    case South:
-                        graphics.drawLine(drawX, drawY + cellH - 1, drawX + cellW, drawY + cellH - 1);
-                        break;
-                }
-            }
-        }
-
-        return graphics;
-    }
-    
-    /**
-     * Draw an isometric version of the maze
-     * @param graphics
-     * @param screen Container which maze will be drawn within
-     * @return Graphics
-     * @throws Exception 
-     */
-    private Graphics renderIsometric(final Graphics graphics, final Rectangle screen) throws Exception
-    {
-        //for isometric the width could be twice the height
-        final int cellW = screen.width  / cols;
-        final int cellH = screen.height / rows;
-        
-        Polygon polygon = null;
-        
-        int[] x = new int[4];
-        int[] y = new int[4];
-        
-        //offset the x,y coordinates so the isometric map is drawn centered
-        int offsetX = screen.x + (screen.width / 2);
-        int offsetY = screen.y + (cellH / 3);// + (screen.height / 2) - (rows * (cellH / 2));
-        
-        for (Location cell : labyrinth.getLocations())
-        {
-            int startX = offsetX + (cell.getCol() * cellW / 2) - (cell.getRow() * cellW / 2);
-            int startY = offsetY + (cell.getRow() * cellH / 2) + (cell.getCol() * cellH / 2);
-            
-            //north point
-            x[0] = startX;
-            y[0] = startY;
-            
-            //east point
-            x[1] = startX + (cellW / 2);
-            y[1] = startY + (cellH / 2);
-            
-            //south point
-            x[2] = startX;
-            y[2] = startY + cellH;
-            
-            //west point
-            x[3] = startX - (cellW / 2);
-            y[3] = startY + (cellH / 2);
-            
-            polygon = new Polygon(x, y, x.length);
-            
-            if (screen.intersects(polygon.getBounds()))
-            {
-                graphics.setColor(Color.white);
-                graphics.fillPolygon(polygon);
-                graphics.setColor(Color.BLACK);
-                graphics.drawPolygon(polygon);
-
-                drawIsometricWalls(cell, polygon, graphics, cellH);
-            }
-        }
-        
-        return graphics;
-    }
-    
-    /**
-     * Draw the isometric walls for the specified Location
-     * @param cell
-     * @param polygon
-     * @param graphics
-     * @param cellH
-     * @return Graphics
-     */
-    private Graphics drawIsometricWalls(final Location cell, final Polygon polygon, final Graphics graphics, final int cellH)
-    {
-        Polygon tmp;
-        
-        int[] x = new int[4];
-        int[] y = new int[4];
-        
-        //the height of the wall will be 33% of the cell height
-        final int wallH = (cellH / 3);
-        
-        List<Wall> tmpWalls = new ArrayList<>();
-        
-        /*
-         * Add the walls in this order so they are drawn appropriately to the user
-         * 1. North
-         * 2. West
-         * 3. East
-         * 4. South
-         */
-        
-        if (cell.hasWall(Wall.North))
-            tmpWalls.add(Wall.North);
-        if (cell.hasWall(Wall.West))
-            tmpWalls.add(Wall.West);
-        if (cell.hasWall(Wall.East))
-            tmpWalls.add(Wall.East);
-        if (cell.hasWall(Wall.South))
-            tmpWalls.add(Wall.South);
-        
-        for (Wall wall : tmpWalls)
-        {
-            switch (wall)
-            {
-                case North:
-                    x[0] = polygon.xpoints[0];
-                    y[0] = polygon.ypoints[0];
-                    
-                    x[1] = polygon.xpoints[1];
-                    y[1] = polygon.ypoints[1];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
-
-                case South:
-                    x[0] = polygon.xpoints[2];
-                    y[0] = polygon.ypoints[2];
-                    
-                    x[1] = polygon.xpoints[3];
-                    y[1] = polygon.ypoints[3];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
-
-                case East:
-                    x[0] = polygon.xpoints[1];
-                    y[0] = polygon.ypoints[1];
-                    
-                    x[1] = polygon.xpoints[2];
-                    y[1] = polygon.ypoints[2];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
-
-                case West:
-                    x[0] = polygon.xpoints[0];
-                    y[0] = polygon.ypoints[0];
-                    
-                    x[1] = polygon.xpoints[3];
-                    y[1] = polygon.ypoints[3];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
-            }
-            
-            tmp = new Polygon(x, y, x.length);
-            
-            graphics.setColor(Color.BLUE);
-            graphics.fillPolygon(tmp);
-            graphics.setColor(Color.BLACK);
-            graphics.drawPolygon(tmp);
-        }
-        
-        return graphics;
-    }
-    
-    /**
-     * Here we will draw the maze on a 3d canvas
-     * @param graphics 
-     * @param screen 
-     * @return Graphics 
-     * @throws Exception 
-     */
-    private Graphics render3D(final Graphics graphics, final Rectangle screen) throws Exception
-    {
-        //background will be black
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(screen.x, screen.y, screen.width, screen.height);
-        
-        firstPerson.render((Graphics2D)graphics, labyrinth.getLocations());
         
         return graphics;
     }

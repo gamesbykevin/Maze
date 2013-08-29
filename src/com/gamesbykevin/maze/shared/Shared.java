@@ -21,7 +21,7 @@ public class Shared
     public static final int ORIGINAL_HEIGHT = 400;
     
     //show UPS/FPS counters
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     
     //how many updates per second, controls speed of game
     public static final int DEFAULT_UPS = 60;

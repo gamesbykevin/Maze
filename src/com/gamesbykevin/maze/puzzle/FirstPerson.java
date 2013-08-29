@@ -1,13 +1,12 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.input.Keyboard;
-
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class FirstPerson 
@@ -26,7 +25,7 @@ public class FirstPerson
     
     //if these coordinated are in the center we will view level from a first person perspetive
     private static final int ORIGIN_X = 200;
-    private static final int ORIGIN_Y = 100;
+    private static final int ORIGIN_Y = 200;
     
     //the distance limit we want before we hit a wall/corner
     private static final double WALL_D = .375;
@@ -39,6 +38,23 @@ public class FirstPerson
         //for starters the Location will be in the middle of the 0,0 cell
         px = py = .5;
         angle = Math.PI;
+    }
+    
+    private class Line
+    {
+        private int x1, y1, x2, y2;
+        private Color color;
+        
+        public Line(final double x1, final double y1, final double x2, final double y2, final Color color)
+        {
+            this.x1 = (int)x1;
+            this.y1 = (int)y1;
+            
+            this.x2 = (int)x2;
+            this.y2 = (int)y2;
+            
+            this.color = color;
+        }
     }
     
     private class Corner 
@@ -233,55 +249,69 @@ public class FirstPerson
      * Draw the walls from a 3d perspective
      * @param graphics
      * @param locations
-     * @return 
+     * @param finish
+     * @param screen
+     * @return Graphics
      */
-    public Graphics render(Graphics2D graphics, List<Location> locations)
+    public Graphics render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Location finish)
     {
-        //the floor will be white
-        graphics.setColor(Color.WHITE);
         
-        //draw the floor for each Location
+        //get all walls and add to this list
+        List<Line> walls = new ArrayList<>();
+            
+        //the anchor point for each Location(column, row) is to start in the North West corner
         for (Location location : locations)
         {
-            Corner westStart = new Corner(location.getCol(), location.getRow());
-            Corner westEnd   = new Corner(location.getCol(), location.getRow() + 1);
+            Color color = Color.BLUE;
             
-            Corner eastStart = new Corner(location.getCol() + 1, location.getRow());
-            Corner eastEnd   = new Corner(location.getCol() + 1, location.getRow() + 1);
-            
-            boolean result = drawFloor(westStart, westEnd, eastStart, eastEnd, (Graphics2D)graphics);
-        }
-        
-        //the wall color will be blue
-        graphics.setColor(Color.BLUE);
-        
-        //draw the wall(s) for each Location
-        for (Location location : locations)
-        {
-            //the anchor point is the Location (column, row) and that is to be assumed in the North West corner
-            
+            if (location.equals(finish))
+                color = Color.RED;
+    
             //the east wall is 1 column to the right of the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.East))
-            {
-                drawWall(new Corner(location.getCol() + 1, location.getRow()), new Corner(location.getCol() + 1, location.getRow() + 1), (Graphics2D)graphics);
-            }
-            
+                addWall(new Corner(location.getCol() + 1, location.getRow()), new Corner(location.getCol() + 1, location.getRow() + 1), walls, color);
+                
             //the west wall is the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.West))
-            {
-                drawWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol(), location.getRow() + 1), (Graphics2D)graphics);
-            }
+                addWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol(), location.getRow() + 1), walls, color);
             
             //the north wall is the current row and extends from the current column to the next column east
             if (location.hasWall(Wall.North))
-            {
-                drawWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol() + 1, location.getRow()), (Graphics2D)graphics);
-            }
+                addWall(new Corner(location.getCol(), location.getRow()), new Corner(location.getCol() + 1, location.getRow()), walls, color);
             
             //the south wall is the row south of the current and extends from the current column to the next column east
             if (location.hasWall(Wall.South))
+                addWall(new Corner(location.getCol(), location.getRow() + 1), new Corner(location.getCol() + 1, location.getRow() + 1), walls, color);
+        }
+        
+        //now we have all the walls that need to be drawn
+        if (walls.size() > 0)
+        {
+            //floor color will be white
+            graphics.setColor(Color.WHITE);
+            
+            for (Line wall : walls)
             {
-                drawWall(new Corner(location.getCol(), location.getRow() + 1), new Corner(location.getCol() + 1, location.getRow() + 1), (Graphics2D)graphics);
+                int[] x = new int[4];
+                int[] y = new int[4];
+                
+                x[0] = wall.x1;
+                x[1] = wall.x2;
+                x[2] = wall.x2;
+                x[3] = wall.x1;
+                
+                y[0] = wall.y1;
+                y[1] = wall.y2;
+                y[2] = screen.y + screen.height;
+                y[3] = screen.y + screen.height;
+                
+                graphics.fillPolygon(new Polygon(x, y, x.length));
+            }
+
+            for (Line wall : walls)
+            {
+                graphics.setColor(wall.color);
+                graphics.drawLine(wall.x1, wall.y1, wall.x2, wall.y2);
             }
         }
         
@@ -289,59 +319,19 @@ public class FirstPerson
     }
     
     /**
-     * Draw the floor of the Cell
-     * @param start West wall start point
-     * @param end   West wall finish point
-     * @param start1 East wall start point
-     * @param end1   East wall finish point
-     * @param graphics Our graphics object
-     * 
-     * @return boolean True if the floor was drawn
+     * If coordinates are within the screen return wall
+     * @param start
+     * @param end
+     * @return Line If Line is not to be currently displayed on the screen null will be returned
      */
-    private boolean drawFloor(Corner start1, Corner end1, Corner start2, Corner end2, Graphics graphics)
-    {
-        //only draw if the coordinates are on the screen
-        if(start1.sy > 0 && end1.sy > 0 && start2.sy > 0 && end2.sy > 0)
-        {
-            int[] x = new int[4];
-            int[] y = new int[4];
-            
-            x[0] = (int)(ORIGIN_X + start1.sx);
-            y[0] = (int)(ORIGIN_Y + start1.sy);
-            
-            x[1] = (int)(ORIGIN_X + end1.sx);
-            y[1] = (int)(ORIGIN_Y + end1.sy);
-            
-            x[2] = (int)(ORIGIN_X + end2.sx);
-            y[2] = (int)(ORIGIN_Y + end2.sy);
-            
-            x[3] = (int)(ORIGIN_X + start2.sx);
-            y[3] = (int)(ORIGIN_Y + start2.sy);
-            
-            graphics.fillPolygon(new Polygon(x, y, x.length));
-            
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    /**
-     * Draw the wall from start to end
-     * @param start Corner where line will start
-     * @param end Corner where line will end
-     * @param graphics Graphics2D object used to draw line
-     */
-    private void drawWall(Corner start, Corner end, Graphics graphics) 
+    private void addWall(Corner start, Corner end, List<Line> walls, Color color) 
     {
         //wall is completely behind so we do not draw
-        if(start.sy < 0 && end.sy < 0) 
+        if (start.sy < 0 && end.sy < 0) 
             return;
         
         //make sure that start ought to be to the left of end on the screen
-        if(!isWallClockwise(start, end)) 
+        if (!isWallClockwise(start, end)) 
         {
             Corner tmp = start;
             start = end;
@@ -349,17 +339,15 @@ public class FirstPerson
         }
 
         //if the start of the wall is behind the user or too far left, replace start
-        if(start.sy < 0 || start.sx < -ORIGIN_X) 
+        if (start.sy < 0 || start.sx < -ORIGIN_X) 
             start = new Corner(start, end, -ORIGIN_X);
 
         //if the end of the wall is behind the user or too far right, replace end
-        if(end.sy < 0 || end.sx > ORIGIN_X)
+        if (end.sy < 0 || end.sx > ORIGIN_X)
             end = new Corner(start, end, ORIGIN_X);
 
         //after adjustments are the coordinates within the boundary so we can draw the line
-        if(start.sy > 0 && end.sy > 0 && start.sx < end.sx) 
-        {
-            graphics.drawLine((int)(ORIGIN_X + start.sx), (int)(ORIGIN_Y + start.sy), (int)(ORIGIN_X + end.sx), (int)(ORIGIN_Y + end.sy));
-        }
+        if (start.sy > 0 && end.sy > 0 && start.sx < end.sx)
+            walls.add(new Line(ORIGIN_X + start.sx, ORIGIN_Y + start.sy, ORIGIN_X + end.sx, ORIGIN_Y + end.sy, color));
     }
 }
