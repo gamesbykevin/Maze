@@ -16,12 +16,12 @@ public class Shared
     public static final int INITIAL_WIDTH  = 400;
     public static final int INITIAL_HEIGHT = 400;
     
-    //dimensions for the original window
+    //dimensions for the size the game was programmed for originaly
     public static final int ORIGINAL_WIDTH  = 400;
     public static final int ORIGINAL_HEIGHT = 400;
     
     //show UPS/FPS counters
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     
     //how many updates per second, controls speed of game
     public static final int DEFAULT_UPS = 60;

@@ -16,7 +16,7 @@ public class Options extends Layer implements LayerRules
     //maze will default to 5 row/col
     private static final int MAZE_DIMENSION_SIZE = 5;
     
-    //maze limit will be 30 row/col
+    //maze limit will be 50 row/col
     private static final int MAZE_DIMENSION_LIMIT = 30;
     
     public Options(final Engine engine) throws Exception

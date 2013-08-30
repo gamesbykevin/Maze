@@ -33,6 +33,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     //original font
     private Font font;
     
+    //our maze object
     private Puzzle puzzle;
     
     /**
@@ -68,6 +69,11 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
             
             keyboard.dispose();
             keyboard = null;
+            
+            if (puzzle != null)
+                puzzle.dispose();
+            
+            puzzle = null;
         }
         catch(Exception e)
         {
@@ -134,6 +140,10 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
     {
         //stop all sound before starting game
         getResources().stopAllSound();
+        
+        //reset input(s)
+        getKeyboard().reset();
+        getMouse().reset();
         
         //algorithm selected to generate maze
         final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
