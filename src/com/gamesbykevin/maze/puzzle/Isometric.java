@@ -9,9 +9,7 @@ import com.gamesbykevin.maze.players.Player;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Isometric extends Player
@@ -53,10 +51,6 @@ public class Isometric extends Player
         {
             drawCell(graphics, screen, solution, Puzzle.SOLUTION_COLOR, offsetX, offsetY);
         }
-        
-        //double startX = offsetX;
-        //double startY = offsetY;
-        drawLocation(graphics, offsetX, offsetY);
     }
     
     private void drawLocation(Graphics graphics, final int offsetX, final int offsetY)
@@ -119,10 +113,6 @@ public class Isometric extends Player
         graphics.fillPolygon(tmp);
         graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
         graphics.drawPolygon(tmp);
-        
-        
-        
-        //graphics.drawRect((int)startX, (int)startY, (int)(Puzzle.CELL_WIDTH * .5), (int)(Puzzle.CELL_HEIGHT * .5));
     }
     
     private Polygon getPolygon(final int startX, final int startY, final int width, final int height)
@@ -176,15 +166,8 @@ public class Isometric extends Player
         graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
         graphics.drawPolygon(polygon);
         
-        Polygon tmp;
-        
-        int[] x = new int[4];
-        int[] y = new int[4];
-        
         //the height of the wall will be 33% of the cell height
         final int wallH = (Puzzle.CELL_HEIGHT / 3);
-        
-        List<Wall> tmpWalls = new ArrayList<>();
         
         /*
          * Add the walls in this order so they are drawn appropriately to the user
@@ -195,88 +178,96 @@ public class Isometric extends Player
          */
         
         if (cell.hasWall(Wall.North))
-            tmpWalls.add(Wall.North);
+            drawWall(Wall.North, polygon, wallH, graphics, color);
         if (cell.hasWall(Wall.West))
-            tmpWalls.add(Wall.West);
-        if (cell.hasWall(Wall.East))
-            tmpWalls.add(Wall.East);
-        if (cell.hasWall(Wall.South))
-            tmpWalls.add(Wall.South);
+            drawWall(Wall.West, polygon, wallH, graphics, color);
         
-        for (Wall wall : tmpWalls)
+        //if this cell is the same as the current Location we need to draw it correctly between walls so it will appear enclosed
+        if (cell.getCol() == (int)super.getX() && cell.getRow() == (int)super.getY())
+            drawLocation(graphics, offsetX, offsetY);
+        
+        if (cell.hasWall(Wall.East))
+            drawWall(Wall.East, polygon, wallH, graphics, color);
+        if (cell.hasWall(Wall.South))
+            drawWall(Wall.South, polygon, wallH, graphics, color);
+    }
+    
+    private void drawWall(final Wall wall, final Polygon polygon, final int wallH, Graphics graphics, Color color)
+    {
+        int[] x = new int[4];
+        int[] y = new int[4];
+        
+        switch (wall)
         {
-            switch (wall)
-            {
-                case North:
-                    x[0] = polygon.xpoints[0];
-                    y[0] = polygon.ypoints[0];
-                    
-                    x[1] = polygon.xpoints[1];
-                    y[1] = polygon.ypoints[1];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
+            case North:
+                x[0] = polygon.xpoints[0];
+                y[0] = polygon.ypoints[0];
 
-                case South:
-                    x[0] = polygon.xpoints[2];
-                    y[0] = polygon.ypoints[2];
-                    
-                    x[1] = polygon.xpoints[3];
-                    y[1] = polygon.ypoints[3];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
+                x[1] = polygon.xpoints[1];
+                y[1] = polygon.ypoints[1];
 
-                case East:
-                    x[0] = polygon.xpoints[1];
-                    y[0] = polygon.ypoints[1];
-                    
-                    x[1] = polygon.xpoints[2];
-                    y[1] = polygon.ypoints[2];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
+                x[2] = x[1];
+                y[2] = y[1] - wallH;
 
-                case West:
-                    x[0] = polygon.xpoints[0];
-                    y[0] = polygon.ypoints[0];
-                    
-                    x[1] = polygon.xpoints[3];
-                    y[1] = polygon.ypoints[3];
-                    
-                    x[2] = x[1];
-                    y[2] = y[1] - wallH;
-                    
-                    x[3] = x[0];
-                    y[3] = y[0] - wallH;
-                    
-                    break;
-            }
-            
-            tmp = new Polygon(x, y, x.length);
-            
-            //draw wall
-            graphics.setColor(color);
-            graphics.fillPolygon(tmp);
-            
-            //draw the outline of the wall
-            graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
-            graphics.drawPolygon(tmp);
+                x[3] = x[0];
+                y[3] = y[0] - wallH;
+
+                break;
+
+            case South:
+                x[0] = polygon.xpoints[2];
+                y[0] = polygon.ypoints[2];
+
+                x[1] = polygon.xpoints[3];
+                y[1] = polygon.ypoints[3];
+
+                x[2] = x[1];
+                y[2] = y[1] - wallH;
+
+                x[3] = x[0];
+                y[3] = y[0] - wallH;
+
+                break;
+
+            case East:
+                x[0] = polygon.xpoints[1];
+                y[0] = polygon.ypoints[1];
+
+                x[1] = polygon.xpoints[2];
+                y[1] = polygon.ypoints[2];
+
+                x[2] = x[1];
+                y[2] = y[1] - wallH;
+
+                x[3] = x[0];
+                y[3] = y[0] - wallH;
+
+                break;
+
+            case West:
+                x[0] = polygon.xpoints[0];
+                y[0] = polygon.ypoints[0];
+
+                x[1] = polygon.xpoints[3];
+                y[1] = polygon.ypoints[3];
+
+                x[2] = x[1];
+                y[2] = y[1] - wallH;
+
+                x[3] = x[0];
+                y[3] = y[0] - wallH;
+
+                break;
         }
+
+        Polygon tmp = new Polygon(x, y, x.length);
+        
+        //draw wall
+        graphics.setColor(color);
+        graphics.fillPolygon(tmp);
+
+        //draw the outline of the wall
+        graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
+        graphics.drawPolygon(tmp);
     }
 }
