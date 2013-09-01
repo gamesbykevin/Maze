@@ -128,7 +128,7 @@ public class Main extends Thread
                 while(deltaUpdate >= 1)
                 {
                     engine.update(this);
-
+                    
                     updates++;
                     deltaUpdate--;
                 }
@@ -137,8 +137,8 @@ public class Main extends Thread
                 {
                     renderImage();
                     drawScreen();
-                    frames++;
                     
+                    frames++;
                     deltaFrame--;
                 }
                 
@@ -302,21 +302,18 @@ public class Main extends Thread
      * Draw frame counter onto Image.
      * This method should only be called when testing
      * @param g Graphics
-     * @return Graphics
      */
-    private Graphics renderCounter(Graphics g)
+    private void renderCounter(Graphics graphics)
     {
         String result = currentUPS + " UPS, " + currentFPS + " FPS";
-        int width = g.getFontMetrics().stringWidth(result);
-        int height = g.getFontMetrics().getHeight() + 1;
+        int width = graphics.getFontMetrics().stringWidth(result);
+        int height = graphics.getFontMetrics().getHeight() + 1;
         Rectangle tmp = new Rectangle(originalSizeWindow.width - width, originalSizeWindow.height - height, width, height);
         
-        g.setColor(Color.BLACK);
-        g.fillRect(tmp.x, tmp.y, tmp.width, tmp.height);
-        g.setColor(Color.WHITE);
-        g.drawString(result, tmp.x, tmp.y + height - 2);
-        
-        return g;
+        graphics.setColor(Color.BLACK);
+        graphics.fillRect(tmp.x, tmp.y, tmp.width, tmp.height);
+        graphics.setColor(Color.WHITE);
+        graphics.drawString(result, tmp.x, tmp.y + height - 2);
     }
     
     /**

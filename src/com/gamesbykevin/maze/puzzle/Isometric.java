@@ -1,6 +1,8 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
+import com.gamesbykevin.framework.input.Keyboard;
+import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
@@ -16,7 +18,19 @@ public class Isometric extends Player
 {
     public Isometric()
     {
-        super();
+        super(Player.VELOCITY);
+    }
+
+    public void update(final Keyboard keyboard, final Labyrinth labyrinth) throws Exception
+    {
+        //set velocity based on keyboard input
+        super.checkInput(keyboard);
+        
+        //check for basic wall collision
+        super.checkCollision(labyrinth);
+        
+        //update location
+        super.update();
     }
 
     /**
@@ -28,91 +42,110 @@ public class Isometric extends Player
      */
     public void render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Cell finish) throws Exception
     {
-        //offset the x,y coordinates so the isometric map is drawn centered
-        int offsetX = screen.x + (screen.width / 2);
-        int offsetY = screen.y + (screen.height / 2);
+        //offset the x,y coordinates so the isometric map is drawn centered to the Location
+        int offsetX = (screen.width / 2);
+        int offsetY = (screen.height / 2);
         
-        Location solution = null;
-        
+        //for isometric draw the floors first
         for (Location cell : locations)
         {
-            //draw the cell if it is not a solution
-           if (cell.equals(finish))
-           {
-               solution = cell;
-               continue;
-           }
+            //if not close enough we won't render
+            if (!hasRange(cell))
+                continue;
             
-            drawCell(graphics, screen, cell, Puzzle.WALL_COLOR, offsetX, offsetY);
+            int startX = offsetX + (int)(((cell.getCol() - super.getX()) * Puzzle.CELL_WIDTH / 2) - ((cell.getRow() - super.getY()) * Puzzle.CELL_WIDTH / 2));
+            int startY = offsetY + (int)(((cell.getRow() - super.getY()) * Puzzle.CELL_HEIGHT / 2) + ((cell.getCol() - super.getX()) * Puzzle.CELL_HEIGHT / 2));
+
+            //get the polygon based on the current corrdinate/dimensions
+            Polygon polygon = getPolygon(startX, startY, Puzzle.CELL_WIDTH, Puzzle.CELL_HEIGHT);
+
+            if (!screen.intersects(polygon.getBounds()))
+                continue;
+
+            //draw floor first
+            graphics.setColor(Puzzle.FLOOR_COLOR);
+            
+            if (cell.equals(finish))
+                graphics.setColor(Puzzle.SOLUTION_COLOR);
+            
+            graphics.fillPolygon(polygon);
+            graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
+            graphics.drawPolygon(polygon);
         }
         
-        //draw the solution last
-        if (solution != null)
+        //now draw the walls
+        for (Location cell : locations)
         {
-            drawCell(graphics, screen, solution, Puzzle.SOLUTION_COLOR, offsetX, offsetY);
+            //if not close enough we won't render
+            if (!hasRange(cell))
+                continue;
+
+            drawCell(graphics, cell, Puzzle.WALL_COLOR, offsetX, offsetY);
         }
     }
     
     private void drawLocation(Graphics graphics, final int offsetX, final int offsetY)
     {
-        Polygon tmp = this.getPolygon(offsetX, offsetY, (int)(Puzzle.CELL_WIDTH * .5), (int)(Puzzle.CELL_HEIGHT * .5));
+        super.setBoundary(getPolygon(offsetX, offsetY, LOCATION_WIDTH, LOCATION_HEIGHT));
         
         //draw current location floor
         graphics.setColor(Color.GREEN);
-        graphics.fillPolygon(tmp);
+        graphics.fillPolygon(getBoundary());
         graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
-        graphics.drawPolygon(tmp);
+        graphics.drawPolygon(getBoundary());
         
         int[] x1 = new int[4];
         int[] y1 = new int[4];
         
-        x1[0] = tmp.xpoints[3];
-        y1[0] = tmp.ypoints[3];
+        x1[0] = getBoundary().xpoints[3];
+        y1[0] = getBoundary().ypoints[3];
         
-        x1[1] = tmp.xpoints[3];
-        y1[1] = tmp.ypoints[3] - (int)(Puzzle.CELL_HEIGHT * .5);
+        x1[1] = getBoundary().xpoints[3];
+        y1[1] = getBoundary().ypoints[3] - LOCATION_HEIGHT;
 
-        x1[2] = tmp.xpoints[2];
-        y1[2] = tmp.ypoints[2] - (int)(Puzzle.CELL_HEIGHT * .5);
+        x1[2] = getBoundary().xpoints[2];
+        y1[2] = getBoundary().ypoints[2] - LOCATION_HEIGHT;
 
-        x1[3] = tmp.xpoints[2];
-        y1[3] = tmp.ypoints[2];
+        x1[3] = getBoundary().xpoints[2];
+        y1[3] = getBoundary().ypoints[2];
         
-        Polygon tmp1 = new Polygon(x1, y1, x1.length);
+        //draw side
+        Polygon tmp = new Polygon(x1, y1, x1.length);
         graphics.setColor(Color.GREEN);
-        graphics.fillPolygon(tmp1);
+        graphics.fillPolygon(tmp);
         graphics.setColor(Color.BLACK);
-        graphics.drawPolygon(tmp1);
-        
+        graphics.drawPolygon(tmp);
         
         int[] x2 = new int[4];
         int[] y2 = new int[4];
         
-        x2[0] = tmp.xpoints[1];
-        y2[0] = tmp.ypoints[1];
+        x2[0] = getBoundary().xpoints[1];
+        y2[0] = getBoundary().ypoints[1];
         
-        x2[1] = tmp.xpoints[1];
-        y2[1] = tmp.ypoints[1] - (int)(Puzzle.CELL_HEIGHT * .5);
+        x2[1] = getBoundary().xpoints[1];
+        y2[1] = getBoundary().ypoints[1] - LOCATION_HEIGHT;
 
-        x2[2] = tmp.xpoints[2];
-        y2[2] = tmp.ypoints[2] - (int)(Puzzle.CELL_HEIGHT * .5);
+        x2[2] = getBoundary().xpoints[2];
+        y2[2] = getBoundary().ypoints[2] - LOCATION_HEIGHT;
 
-        x2[3] = tmp.xpoints[2];
-        y2[3] = tmp.ypoints[2];
+        x2[3] = getBoundary().xpoints[2];
+        y2[3] = getBoundary().ypoints[2];
         
+        //draw other side
         Polygon tmp2 = new Polygon(x2, y2, x2.length);
         graphics.setColor(Color.GREEN);
         graphics.fillPolygon(tmp2);
         graphics.setColor(Color.BLACK);
         graphics.drawPolygon(tmp2);
         
-        tmp.translate(0, -(int)(Puzzle.CELL_HEIGHT * .5));
+        Polygon top = new Polygon(getBoundary().xpoints, getBoundary().ypoints, getBoundary().npoints);
+        top.translate(0, -LOCATION_HEIGHT);
         
-        //draw current location roof
+        //draw top
         graphics.setColor(Color.GREEN);
-        graphics.fillPolygon(tmp);
+        graphics.fillPolygon(top);
         graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
-        graphics.drawPolygon(tmp);
+        graphics.drawPolygon(top);
     }
     
     private Polygon getPolygon(final int startX, final int startY, final int width, final int height)
@@ -133,7 +166,7 @@ public class Isometric extends Player
         y[2] = startY + height;
 
         //west point
-        x[3] = startX - (width / 2);
+        x[3] = startX - (width  / 2);
         y[3] = startY + (height / 2);
 
         return new Polygon(x, y, x.length);
@@ -149,7 +182,7 @@ public class Isometric extends Player
      * @param offsetX off-set x coordinate 
      * @param offsetY off-set y coordinate 
      */
-    private void drawCell(final Graphics graphics, final Rectangle screen, final Location cell, final Color color, final int offsetX, final int offsetY)
+    private void drawCell(final Graphics graphics, final Location cell, final Color color, final int offsetX, final int offsetY)
     {
         int startX = offsetX + (int)(((cell.getCol() - super.getX()) * Puzzle.CELL_WIDTH / 2) - ((cell.getRow() - super.getY()) * Puzzle.CELL_WIDTH / 2));
         int startY = offsetY + (int)(((cell.getRow() - super.getY()) * Puzzle.CELL_HEIGHT / 2) + ((cell.getCol() - super.getX()) * Puzzle.CELL_HEIGHT / 2));
@@ -157,24 +190,16 @@ public class Isometric extends Player
         //get the polygon based on the current corrdinate/dimensions
         Polygon polygon = getPolygon(startX, startY, Puzzle.CELL_WIDTH, Puzzle.CELL_HEIGHT);
 
-        if (!screen.intersects(polygon.getBounds()))
-            return;
-        
-        //draw floor first
-        graphics.setColor(Puzzle.FLOOR_COLOR);
-        graphics.fillPolygon(polygon);
-        graphics.setColor(Puzzle.WALL_OUTLINE_COLOR);
-        graphics.drawPolygon(polygon);
-        
         //the height of the wall will be 33% of the cell height
         final int wallH = (Puzzle.CELL_HEIGHT / 3);
         
         /*
-         * Add the walls in this order so they are drawn appropriately to the user
+         * Draw the walls in this order so they are drawn appropriately around the user
          * 1. North
          * 2. West
-         * 3. East
-         * 4. South
+         * 3. Player Location
+         * 4. East
+         * 5. South
          */
         
         if (cell.hasWall(Wall.North))
@@ -192,6 +217,15 @@ public class Isometric extends Player
             drawWall(Wall.South, polygon, wallH, graphics, color);
     }
     
+    /**
+     * Draw a Wall for each direction relative to the current polygon Parameter
+     * 
+     * @param wall Which wall are we drawing
+     * @param polygon The relative position to base where the wall will be drawed
+     * @param wallH The wall height
+     * @param graphics Graphics object
+     * @param color Color of the wall
+     */
     private void drawWall(final Wall wall, final Polygon polygon, final int wallH, Graphics graphics, Color color)
     {
         int[] x = new int[4];

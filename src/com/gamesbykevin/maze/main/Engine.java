@@ -149,7 +149,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
         
         //each maze will have the same number of columns/rows
-        final int total = (menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeDimensions) * 5) + 5;
+        final int total = Puzzle.DIMENSION_SELECTIONS[menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeDimensions)];
         
         //how will we draw the maze
         final int renderIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
@@ -163,7 +163,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
             puzzle = null;
         }
         
-        puzzle = new Puzzle(total, algorithmIndex, renderIndex);
+        puzzle = new Puzzle(total, algorithmIndex, renderIndex, main.getScreen());
         
         //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
     }
@@ -175,7 +175,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
      * @throws Exception 
      */
     @Override
-    public Graphics render(Graphics graphics) throws Exception
+    public void render(Graphics graphics) throws Exception
     {
         //if the resources are still loading
         if (resources.isLoading())
@@ -191,17 +191,14 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
             //draw menu on top of the game if visible
             renderMenu(graphics);
         }
-        
-        return graphics;
     }
     
     /**
      * Draw our game elements
      * @param graphics2d Graphics2D object that game elements will be written to
-     * @return Graphics the Graphics object with the appropriate game elements written to it
      * @throws Exception 
      */
-    private Graphics renderGame(Graphics2D graphics) throws Exception
+    private void renderGame(Graphics2D graphics) throws Exception
     {
         //store the original font if we haven't already
         if (font == null)
@@ -214,23 +211,20 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         
         if (puzzle != null)
         {
-            puzzle.render(graphics, getMain().getScreen());
+            puzzle.render(graphics, main.getScreen());
         }
         
         //set the original font back so the menu will be rendered correctly
         graphics.setFont(font);
-        
-        return graphics;
     }
     
     /**
      * Draw the Game Menu
      * 
-     * @param g Graphics object where Images/Objects will be drawn to
-     * @return Graphics The applied Graphics drawn to parameter object
+     * @param graphics Graphics object where Images/Objects will be drawn to
      * @throws Exception 
      */
-    private Graphics renderMenu(Graphics graphics) throws Exception
+    private void renderMenu(Graphics graphics) throws Exception
     {
         //if menu is setup draw menu
         if (menu.isSetup())
@@ -254,8 +248,6 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
                 }
             }
         }
-
-        return graphics;
     }
     
     public Puzzle getPuzzle()

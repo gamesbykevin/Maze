@@ -19,12 +19,11 @@ public interface EngineRules
     
     /**
      * 
-     * @param g Graphics object that game will be written to
-     * @param originalSizeWindow Rectangle containing the original dimensions of the game
+     * @param graphics Graphics object that game will be written to
      * @return Graphics object containing game/menu elements
      * @throws Exception 
      */
-    public Graphics render(Graphics g) throws Exception;
+    public void render(Graphics graphics) throws Exception;
     
     /**
      * The Main class where the application is initialized

@@ -7,6 +7,7 @@ import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 
 import com.gamesbykevin.maze.main.Engine;
 
+import java.awt.image.BufferedImage;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -27,8 +28,11 @@ public class Puzzle
     public static final BasicStroke STROKE_REGULAR = new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     
     //static dimensions of each cell
-    protected static final int CELL_WIDTH = 50;
-    protected static final int CELL_HEIGHT = 50;
+    public static final int CELL_WIDTH = 50;
+    public static final int CELL_HEIGHT = 50;
+    
+    //the different sizes for our maze, NOTE: each maze will have the same amount of columns and rows
+    public static final int[] DIMENSION_SELECTIONS = {5, 10, 15, 20, 25, 30};
     
     public enum Render
     {
@@ -53,10 +57,17 @@ public class Puzzle
     //the walls will be blue
     protected static final Color WALL_COLOR = Color.BLUE;
     
+    //self explanatory
     protected static final Color WALL_OUTLINE_COLOR = Color.BLACK;
     
     //the floors will be white
     protected static final Color FLOOR_COLOR = Color.WHITE;
+    
+    //draw maze to this image for display on the screen
+    private BufferedImage puzzleImage;
+    
+    //the maze will be drawn inside here
+    private Rectangle container;
     
     /**
      * Create a new maze
@@ -66,7 +77,7 @@ public class Puzzle
      * 
      * @throws Exception 
      */
-    public Puzzle(final int total, final int algorithmIndex, final int renderIndex) throws Exception
+    public Puzzle(final int total, final int algorithmIndex, final int renderIndex, final Rectangle screen) throws Exception
     {
         //the current render to be displayed
         this.render = Render.values()[renderIndex];
@@ -85,6 +96,14 @@ public class Puzzle
         
         //the original rendering for the maze
         this.topDown = new TopDown();
+        
+        //the container our maze will be drawn in
+        container = new Rectangle();
+        container.width = screen.width;
+        container.height = screen.height - 50;
+        
+        //dimensions for the puzzle image won't be same size
+        puzzleImage = new BufferedImage(container.width, container.height, BufferedImage.TYPE_INT_ARGB);
     }
     
     public Render getRender()
@@ -155,13 +174,13 @@ public class Puzzle
                     switch (render)
                     {
                         case Original:
-                            topDown.update(engine.getKeyboard(), labyrinth.getLocation((int)topDown.getX(), (int)topDown.getY()).getWalls());
+                            topDown.update(engine.getKeyboard(), labyrinth);
                             col = topDown.getX();
                             row = topDown.getY();
                             break;
 
                         case Isometric:
-                            isometric.update(engine.getKeyboard(), labyrinth.getLocation((int)isometric.getX(), (int)isometric.getY()).getWalls());
+                            isometric.update(engine.getKeyboard(), labyrinth);
                             col = isometric.getX();
                             row = isometric.getY();
                             break;
@@ -183,10 +202,17 @@ public class Puzzle
     }
     
     /**
-     * Draw the labyrinth. If it is still in process of being created draw the progress. 
+     * 
      * @param graphics 
      * @param screen 
      * @return Graphics 
+     * @throws Exception 
+     */
+    /**
+     * Draw the labyrinth. If it is still in process of being created draw the progress. 
+     * @param graphics Graphics object
+     * @param mazeScreen The window the maze will be drawn in
+     * @param screen The entire screen the user sees
      * @throws Exception 
      */
     public void render(final Graphics2D graphics, final Rectangle screen) throws Exception
@@ -203,28 +229,32 @@ public class Puzzle
             if (labyrinth.getFinish() == null)
                 return;
 
+            Graphics2D imageGraphics = puzzleImage.createGraphics();
+            
             //background will be black in all scenarios
-            graphics.setColor(Color.BLACK);
-            graphics.fillRect(screen.x, screen.y, screen.width, screen.height);
+            imageGraphics.setColor(Color.BLACK);
+            imageGraphics.fillRect(0, 0, puzzleImage.getWidth(), puzzleImage.getHeight());
 
             switch (render)
             {
                 case Original:
-                    graphics.setStroke(STROKE_REGULAR);
-                    topDown.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish());
+                    imageGraphics.setStroke(STROKE_REGULAR);
+                    topDown.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
                     break;
 
                 case Isometric:
-                    graphics.setStroke(STROKE_REGULAR);
-                    isometric.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish());
+                    imageGraphics.setStroke(STROKE_REGULAR);
+                    isometric.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
                     break;
 
                 case First_Person:
                     //walls drawn will have some thickness
-                    graphics.setStroke(STROKE_THICK);
-                    firstPerson.render(graphics, screen, labyrinth.getLocations(), labyrinth.getFinish());
+                    imageGraphics.setStroke(STROKE_THICK);
+                    firstPerson.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
                     break;
             }
+            
+            graphics.drawImage(puzzleImage, screen.x, screen.y + screen.height - container.height, container.width, container.height, null);
         }
     }
 }

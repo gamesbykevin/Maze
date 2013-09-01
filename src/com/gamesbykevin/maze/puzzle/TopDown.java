@@ -1,6 +1,8 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
+import com.gamesbykevin.framework.input.Keyboard;
+import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
@@ -8,6 +10,7 @@ import com.gamesbykevin.maze.players.Player;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.List;
 
@@ -15,7 +18,19 @@ public class TopDown extends Player
 {
     public TopDown()
     {
-        super();
+        super(Player.VELOCITY);
+    }
+    
+    public void update(final Keyboard keyboard, final Labyrinth labyrinth) throws Exception
+    {
+        //set velocity based on keyboard input
+        super.checkInput(keyboard);
+        
+        //check for basic wall collision
+        super.checkCollision(labyrinth);
+        
+        //update location
+        super.update();
     }
     
     /**
@@ -32,6 +47,10 @@ public class TopDown extends Player
         //draw the walls of each cell not including the solution
         for (Location cell : locations)
         {
+            //if not close enough we won't render
+            if (!hasRange(cell))
+                continue;
+            
             //draw the solution last
             if (finish.equals(cell))
             {
@@ -48,9 +67,8 @@ public class TopDown extends Player
             drawWalls(graphics, solution, screen, Puzzle.SOLUTION_COLOR);
         }
         
-        
-        final int drawX = screen.x + (screen.width  / 2);
-        final int drawY = screen.y + (screen.height / 2);
+        final int drawX = (screen.width  / 2);
+        final int drawY = (screen.height / 2);
         
         if (super.getWidth() == 0 || super.getHeight() == 0)
         {
@@ -58,8 +76,34 @@ public class TopDown extends Player
             super.setHeight(Puzzle.CELL_HEIGHT * .5);
         }
         
+        setBoundary(drawX, drawY);
+        
         graphics.setColor(Color.GREEN);
-        graphics.fillRect((int)(drawX - (getWidth() / 2)), (int)(drawY - (getHeight() / 2)), (int)getWidth(), (int)getHeight());
+        graphics.fillPolygon(super.getBoundary());
+    }
+    
+    private void setBoundary(final double startX, final double startY)
+    {
+        int[] x = new int[4];
+        int[] y = new int[4];
+        
+        //north west
+        x[0] = (int)startX;
+        y[0] = (int)startY;
+        
+        //north east
+        x[1] = x[0] + (int)getWidth();
+        y[1] = y[0];
+        
+        //south east
+        x[2] = x[1];
+        y[2] = y[1] + (int)getHeight();
+        
+        //south west
+        x[3] = x[2] - (int)getWidth();
+        y[3] = y[2];
+        
+        super.setBoundary(new Polygon(x, y, x.length));
     }
     
     /**
@@ -72,8 +116,8 @@ public class TopDown extends Player
      */
     private void drawWalls(final Graphics graphics, final Location location, final Rectangle screen, final Color color)
     {
-        final int drawX = screen.x + (screen.width  / 2) + (int)((location.getCol() - super.getX()) * Puzzle.CELL_WIDTH);
-        final int drawY = screen.y + (screen.height / 2) + (int)((location.getRow() - super.getY()) * Puzzle.CELL_HEIGHT);
+        final int drawX = (screen.width  / 2) + (int)((location.getCol() - super.getX()) * Puzzle.CELL_WIDTH);
+        final int drawY = (screen.height / 2) + (int)((location.getRow() - super.getY()) * Puzzle.CELL_HEIGHT);
 
         //don't draw the cell if it isn't on the screen
         if (!screen.intersects(drawX, drawY, Puzzle.CELL_WIDTH, Puzzle.CELL_HEIGHT))

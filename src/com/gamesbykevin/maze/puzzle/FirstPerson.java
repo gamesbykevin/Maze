@@ -1,7 +1,6 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
-import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.input.Keyboard;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
@@ -9,7 +8,6 @@ import com.gamesbykevin.framework.labyrinth.Location.Wall;
 import com.gamesbykevin.maze.players.Player;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +15,6 @@ public class FirstPerson extends Player
 {
     //angle we are facing 0 - 360
     private double angle;
-    
-    //the speed we turn left/right
-    private double angularVelocity;
-    
-    //the speed to move amongst the x,y axis
-    private double speed;
     
     //if these coordinated are in the center we will view level from a first person perspetive
     private static final int ORIGIN_X = 200;
@@ -35,11 +27,11 @@ public class FirstPerson extends Player
     private static final double DISTANCE = 200;
     private static final double WALL_HEIGHT = .3;
     
-    //draw any cells within 20 rows/columns so we don't experience performance issues
-    private static final int RENDER_RANGE = 10;
-    
     public FirstPerson()
     {
+        //the velocity for 3d is different
+        super(Player.VELOCITY_3D);
+        
         angle = Math.PI;
     }
     
@@ -126,32 +118,37 @@ public class FirstPerson extends Player
      */
     private void checkCorners() 
     {
+        //get the current column and row
         int x = (int)super.getX(), y = (int)super.getY();
+        
+        //get the difference from the location and actual position
         double cx = super.getX() - x, cy = super.getY() - y;
         double rcx = 1 - cx, rcy = 1 - cy;
+        
+        //distance
         double d;
 
         if ((d = Math.sqrt(cx * cx + cy * cy)) < WALL_D) 
         {
-            //user hit north west corner
+            //hit north west corner
             super.setX(super.getX() + ((WALL_D / d - 1) * cx));
             super.setY(super.getY() + ((WALL_D / d - 1) * cy));
         }
         else if ((d = Math.sqrt(rcx * rcx + cy * cy)) < WALL_D) 
         {
-            //user hit north east corner
+            //hit north east corner
             super.setX(super.getX() - ((WALL_D / d - 1) * rcx));
             super.setY(super.getY() + ((WALL_D / d - 1) * cy));
         }
         else if ((d = Math.sqrt(cx * cx + rcy * rcy)) < WALL_D)
         {
-            //user hit south west corner
+            //south west corner
             super.setX(super.getX() + ((WALL_D / d - 1) * cx));
             super.setY(super.getY() - ((WALL_D / d - 1) * rcy));
         }
         else if ((d = Math.sqrt(rcx * rcx + rcy * rcy)) < WALL_D)
         {
-            //user hit south east corner
+            //south east corner
             super.setX(super.getX() - ((WALL_D / d - 1) * rcx));
             super.setY(super.getY() - ((WALL_D / d - 1) * rcy));
         }
@@ -169,10 +166,15 @@ public class FirstPerson extends Player
         return left.tx * right.ty - left.ty * right.tx < 0;
     }
     
-    @Override
+    /**
+     * The update for the first person velocity is handled differently than the 2d and isometric 
+     * @param keyboard
+     * @param walls 
+     */
     public void update(final Keyboard keyboard, final List<Wall> walls)
     {
-        angle += .1 * angularVelocity;
+        //change the angle the user is facing, the velocity x will determine how fast the turn speed is
+        angle += .1 * super.getVelocityX();
 
         if(angle < 0)
         {
@@ -183,49 +185,21 @@ public class FirstPerson extends Player
             angle -= 2 * Math.PI;
         }
         
-        super.setX(super.getX() + (-Player.VELOCITY * speed * Math.sin(angle)));
-        super.setY(super.getY() + (-Player.VELOCITY * speed * Math.cos(angle)));
+        //set the player at the specified position and facing the specified angle
+        super.setX(super.getX() + (-Player.VELOCITY * super.getVelocityY() * Math.sin(angle)));
+        super.setY(super.getY() + (-Player.VELOCITY * super.getVelocityY() * Math.cos(angle)));
 
+        //check for wall collision
         checkWalls(walls);
+        
+        //check for corner collision
         checkCorners();
         
-        if (keyboard.hasKeyPressed(KeyEvent.VK_UP))
-            speed = 1;
+        //reset turn speed
+        super.resetVelocityX();
         
-        if (keyboard.hasKeyReleased(KeyEvent.VK_UP))
-        {
-            speed = 0;
-            keyboard.reset();
-        }
-        
-        if (keyboard.hasKeyPressed(KeyEvent.VK_DOWN))
-            speed = -1;
-        
-        if (keyboard.hasKeyReleased(KeyEvent.VK_DOWN))
-        {
-            speed = 0;
-            keyboard.reset();
-        }
-        
-        angularVelocity = 0;
-        
-        if (keyboard.hasKeyPressed(KeyEvent.VK_LEFT))
-            angularVelocity = 1;
-        
-        if (keyboard.hasKeyPressed(KeyEvent.VK_RIGHT))
-            angularVelocity = -1;
-        
-        if (keyboard.hasKeyReleased(KeyEvent.VK_LEFT))
-        {
-            angularVelocity = 0;
-            keyboard.reset();
-        }
-        
-        if (keyboard.hasKeyReleased(KeyEvent.VK_RIGHT))
-        {
-            angularVelocity = 0;
-            keyboard.reset();
-        }
+        //check keyboard input
+        super.checkInput(keyboard);
     }
     
     /**
@@ -244,12 +218,8 @@ public class FirstPerson extends Player
         //the anchor point for each Location(column, row) is to start in the North West corner
         for (Location location : locations)
         {
-            //the column is out of range
-            if (location.getCol() < super.getX() - RENDER_RANGE || location.getCol() > super.getX() + RENDER_RANGE)
-                continue;
-            
-            //the row is out of range
-            if (location.getRow() > super.getY() + RENDER_RANGE || location.getRow() < super.getY() - RENDER_RANGE)
+            //if not close enough we won't render
+            if (!hasRange(location))
                 continue;
             
             Color color = Puzzle.WALL_COLOR;
@@ -312,6 +282,7 @@ public class FirstPerson extends Player
                 }
             }
             
+            //draw the remaining walls which should only contain the solution
             for (Line wall : walls)
             {
                 graphics.setColor(wall.color);

@@ -10,15 +10,10 @@ import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
 import com.gamesbykevin.maze.puzzle.Puzzle.Render;
 import com.gamesbykevin.maze.menu.CustomMenu;
+import com.gamesbykevin.maze.puzzle.Puzzle;
 
 public class Options extends Layer implements LayerRules
 {
-    //maze will default to 5 row/col
-    private static final int MAZE_DIMENSION_SIZE = 5;
-    
-    //maze limit will be 50 row/col
-    private static final int MAZE_DIMENSION_LIMIT = 30;
-    
     public Options(final Engine engine) throws Exception
     {
         super(Layer.Type.SCROLL_HORIZONTAL_WEST_REPEAT, engine.getMain().getScreen());
@@ -53,9 +48,10 @@ public class Options extends Layer implements LayerRules
         super.add(CustomMenu.OptionKey.Algorithm, tmp);
         
         tmp = new Option("Cols / Rows: ");
-        for (int i=MAZE_DIMENSION_SIZE; i <= MAZE_DIMENSION_LIMIT; i += MAZE_DIMENSION_SIZE)
+        
+        for (Integer size : Puzzle.DIMENSION_SELECTIONS)
         {
-            tmp.add(i + "", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+            tmp.add(size+ "", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         }
         super.add(CustomMenu.OptionKey.MazeDimensions, tmp);
 
