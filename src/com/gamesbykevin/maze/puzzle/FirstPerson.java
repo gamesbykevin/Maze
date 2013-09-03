@@ -1,27 +1,23 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
-import com.gamesbykevin.framework.input.Keyboard;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
-import com.gamesbykevin.maze.players.Player;
+import com.gamesbykevin.maze.player.Player;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirstPerson extends Player
+public class FirstPerson
 {
-    //angle we are facing 0 - 360
-    private double angle;
-    
     //if these coordinated are in the center we will view level from a first person perspetive
     private static final int ORIGIN_X = 200;
     private static final int ORIGIN_Y = 200;
     
     //the distance limit we want before we hit a wall/corner
-    private static final double WALL_D = .375;
+    private static final double WALL_D = .299;
     
     //self explanatory
     private static final double DISTANCE = 200;
@@ -29,10 +25,6 @@ public class FirstPerson extends Player
     
     public FirstPerson()
     {
-        //the velocity for 3d is different
-        super(Player.VELOCITY_3D);
-        
-        angle = Math.PI;
     }
     
     private class Line
@@ -69,7 +61,7 @@ public class FirstPerson extends Player
             this.sy = WALL_HEIGHT * DISTANCE / ty;
         }
         
-        public Corner(final double dx, final double dy) 
+        public Corner(final double dx, final double dy, final double angle) 
         {
             tx = dx * Math.cos(angle) - dy * Math.sin(angle);
             ty = -dx * Math.sin(angle) - dy * Math.cos(angle);
@@ -87,28 +79,28 @@ public class FirstPerson extends Player
      * 
      * @param current 
      */
-    private void checkWalls(final List<Wall> walls) 
+    private void checkWalls(final Player player, final List<Wall> walls) 
     {
-        int x = (int)super.getX(), y = (int)super.getY();
-        double cx = super.getX() - x, cy = super.getY() - y;
+        int x = (int)player.getX(), y = (int)player.getY();
+        double cx = player.getX() - x, cy = player.getY() - y;
         double rcx = 1 - cx, rcy = 1 - cy;
 
         if(cx < WALL_D && walls.indexOf(Wall.West) >= 0)
         {
-            super.setX(super.getX() + (WALL_D - cx));
+            player.setX(player.getX() + (WALL_D - cx));
         } 
         else if(rcx < WALL_D && walls.indexOf(Wall.East) >= 0)
         {
-            super.setX(super.getX() - (WALL_D - rcx));
+            player.setX(player.getX() - (WALL_D - rcx));
         }
 
         if(cy < WALL_D && walls.indexOf(Wall.North) >= 0)
         {
-            super.setY(super.getY() + (WALL_D - cy));
+            player.setY(player.getY() + (WALL_D - cy));
         } 
         else if(rcy < WALL_D && walls.indexOf(Wall.South) >= 0)
         {
-            super.setY(super.getY() - (WALL_D - rcy));
+            player.setY(player.getY() - (WALL_D - rcy));
         }
     }
     
@@ -116,13 +108,13 @@ public class FirstPerson extends Player
      * Here we will check if the user has hit any corners.<br>
      * If so we need to determine which cell location (px, py) is the correct one.
      */
-    private void checkCorners() 
+    private void checkCorners(final Player player) 
     {
         //get the current column and row
-        int x = (int)super.getX(), y = (int)super.getY();
+        int x = (int)player.getX(), y = (int)player.getY();
         
         //get the difference from the location and actual position
-        double cx = super.getX() - x, cy = super.getY() - y;
+        double cx = player.getX() - x, cy = player.getY() - y;
         double rcx = 1 - cx, rcy = 1 - cy;
         
         //distance
@@ -131,26 +123,26 @@ public class FirstPerson extends Player
         if ((d = Math.sqrt(cx * cx + cy * cy)) < WALL_D) 
         {
             //hit north west corner
-            super.setX(super.getX() + ((WALL_D / d - 1) * cx));
-            super.setY(super.getY() + ((WALL_D / d - 1) * cy));
+            player.setX(player.getX() + ((WALL_D / d - 1) * cx));
+            player.setY(player.getY() + ((WALL_D / d - 1) * cy));
         }
         else if ((d = Math.sqrt(rcx * rcx + cy * cy)) < WALL_D) 
         {
             //hit north east corner
-            super.setX(super.getX() - ((WALL_D / d - 1) * rcx));
-            super.setY(super.getY() + ((WALL_D / d - 1) * cy));
+            player.setX(player.getX() - ((WALL_D / d - 1) * rcx));
+            player.setY(player.getY() + ((WALL_D / d - 1) * cy));
         }
         else if ((d = Math.sqrt(cx * cx + rcy * rcy)) < WALL_D)
         {
             //south west corner
-            super.setX(super.getX() + ((WALL_D / d - 1) * cx));
-            super.setY(super.getY() - ((WALL_D / d - 1) * rcy));
+            player.setX(player.getX() + ((WALL_D / d - 1) * cx));
+            player.setY(player.getY() - ((WALL_D / d - 1) * rcy));
         }
         else if ((d = Math.sqrt(rcx * rcx + rcy * rcy)) < WALL_D)
         {
             //south east corner
-            super.setX(super.getX() - ((WALL_D / d - 1) * rcx));
-            super.setY(super.getY() - ((WALL_D / d - 1) * rcy));
+            player.setX(player.getX() - ((WALL_D / d - 1) * rcx));
+            player.setY(player.getY() - ((WALL_D / d - 1) * rcy));
         }
     }
     
@@ -171,47 +163,47 @@ public class FirstPerson extends Player
      * @param keyboard
      * @param walls 
      */
-    public void update(final Keyboard keyboard, final List<Wall> walls)
+    public void update(final List<Wall> walls, final Player player)
     {
         //change the angle the user is facing, the velocity x will determine how fast the turn speed is
-        angle += .1 * super.getVelocityX();
+        player.setAngle(player.getAngle() + .1 * player.getVelocityX());
 
-        if(angle < 0)
+        if(player.getAngle() < 0)
         {
-            angle += 2 * Math.PI;
+            player.setAngle(player.getAngle() + (2 * Math.PI));
         }
-        else if(angle >= 2 * Math.PI)
+        else if(player.getAngle() >= 2 * Math.PI)
         {
-            angle -= 2 * Math.PI;
+            player.setAngle(player.getAngle() - (2 * Math.PI));
         }
         
         //set the player at the specified position and facing the specified angle
-        super.setX(super.getX() + (-Player.VELOCITY * super.getVelocityY() * Math.sin(angle)));
-        super.setY(super.getY() + (-Player.VELOCITY * super.getVelocityY() * Math.cos(angle)));
+        player.setX(player.getX() + (-Player.VELOCITY * player.getVelocityY() * Math.sin(player.getAngle())));
+        player.setY(player.getY() + (-Player.VELOCITY * player.getVelocityY() * Math.cos(player.getAngle())));
 
         //check for wall collision
-        checkWalls(walls);
+        checkWalls(player, walls);
         
         //check for corner collision
-        checkCorners();
+        checkCorners(player);
         
         //reset turn speed
-        super.resetVelocityX();
-        
-        //check keyboard input
-        super.checkInput(keyboard);
+        player.resetVelocityX();
     }
     
     /**
      * Draw the walls from a 3d perspective
      * @param graphics
-     * @param locations
-     * @param finish
-     * @param screen
+     * @param locations All Locations in maze
+     * @param finish Finish Line
+     * @param screen Size of window
      * @return Graphics
      */
-    public void render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Cell finish)
+    public void render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Cell finish, final Player player)
     {
+        if (player == null)
+            return;
+        
         //get all walls and add to this list
         List<Line> walls = new ArrayList<>();
             
@@ -219,7 +211,7 @@ public class FirstPerson extends Player
         for (Location location : locations)
         {
             //if not close enough we won't render
-            if (!hasRange(location))
+            if (!player.hasRange(location))
                 continue;
             
             Color color = Puzzle.WALL_COLOR;
@@ -229,19 +221,19 @@ public class FirstPerson extends Player
     
             //the east wall is 1 column to the right of the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.East))
-                addWall(new Corner(location.getCol() + 1 - super.getX(), location.getRow() - super.getY()), new Corner(location.getCol() + 1 - super.getX(), location.getRow() + 1 - super.getY()), walls, color);
+                addWall(new Corner(location.getCol() + 1 - player.getX(), location.getRow() - player.getY(), player.getAngle()), new Corner(location.getCol() + 1 - player.getX(), location.getRow() + 1 - player.getY(), player.getAngle()), walls, color);
                 
             //the west wall is the current column and extends from the current row to the next row south
             if (location.hasWall(Wall.West))
-                addWall(new Corner(location.getCol() - super.getX(), location.getRow() - super.getY()), new Corner(location.getCol() - super.getX(), location.getRow() + 1 - super.getY()), walls, color);
+                addWall(new Corner(location.getCol() - player.getX(), location.getRow() - player.getY(), player.getAngle()), new Corner(location.getCol() - player.getX(), location.getRow() + 1 - player.getY(), player.getAngle()), walls, color);
             
             //the north wall is the current row and extends from the current column to the next column east
             if (location.hasWall(Wall.North))
-                addWall(new Corner(location.getCol() - super.getX(), location.getRow() - super.getY()), new Corner(location.getCol() + 1 - super.getX(), location.getRow() - super.getY()), walls, color);
+                addWall(new Corner(location.getCol() - player.getX(), location.getRow() - player.getY(), player.getAngle()), new Corner(location.getCol() + 1 - player.getX(), location.getRow() - player.getY(), player.getAngle()), walls, color);
             
             //the south wall is the row south of the current and extends from the current column to the next column east
             if (location.hasWall(Wall.South))
-                addWall(new Corner(location.getCol() - super.getX(), location.getRow() + 1 - super.getY()), new Corner(location.getCol() + 1 - super.getX(), location.getRow() + 1 - super.getY()), walls, color);
+                addWall(new Corner(location.getCol() - player.getX(), location.getRow() + 1 - player.getY(), player.getAngle()), new Corner(location.getCol() + 1 - player.getX(), location.getRow() + 1 - player.getY(), player.getAngle()), walls, color);
         }
         
         //now we have all the walls that need to be drawn

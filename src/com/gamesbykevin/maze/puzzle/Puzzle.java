@@ -6,12 +6,14 @@ import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 
 import com.gamesbykevin.maze.main.Engine;
+import com.gamesbykevin.maze.player.Player;
 
 import java.awt.image.BufferedImage;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 /**
  * This is our main Maze class that updates and renders
@@ -68,6 +70,9 @@ public class Puzzle
     
     //the maze will be drawn inside here
     private Rectangle container;
+    
+    //the coordinates, angle for each player is stored here
+    private Player human, opponent;
     
     /**
      * Create a new maze
@@ -129,6 +134,15 @@ public class Puzzle
         firstPerson = null;
         isometric = null;
         topDown = null;
+        
+        if (human != null)
+            human.dispose();
+        
+        if (opponent != null)
+            opponent.dispose();
+        
+        human = null;
+        opponent = null;
     }
     
     /**
@@ -144,77 +158,98 @@ public class Puzzle
             {
                 //for every Engine update we will update the maze generation 1 time(s)
                 labyrinth.update();
+                return;
+            }
+            
+            //if the puzzle finish has not been set yet
+            if (labyrinth.getFinish() == null)
+            {
+                int cost = -1;
+
+                Cell finish = new Cell();
+
+                for (Location tmp : labyrinth.getLocations())
+                {
+                    //mark all Locations un-visited for AI
+                    tmp.setVisited(false);
+
+                    //if the Location cost is greater than the current cost
+                    if (tmp.getCost() > cost)
+                    {
+                        cost = tmp.getCost();
+                        finish = tmp;
+                    }
+                }
+
+                //the finish part of the maze will always be the furthest away from the start Location
+                labyrinth.setFinish(finish.getCol(), finish.getRow());
+                return;
+            }
+            
+            //if (human == null)
+            //    human = new Player();
+
+            if (human != null)
+            {
+                switch (render)
+                {
+                    case Original:
+                    case Isometric:
+                        
+                        //set speed of player
+                        human.setVelocity(Player.VELOCITY);
+                        
+                        //set velocity based on keyboard input
+                        human.checkInput(engine.getKeyboard());
+
+                        //check for basic wall collision
+                        human.checkCollision(labyrinth);
+
+                        //update location
+                        human.update();
+                        break;
+
+                    case First_Person:
+                        
+                        //set speed of player
+                        human.setVelocity(Player.VELOCITY_3D);
+                        
+                        //update first person point of view
+                        firstPerson.update(labyrinth.getLocation((int)human.getX(), (int)human.getY()).getWalls(), human);
+                        
+                        //set velocity based on keyboard input
+                        human.checkInput(engine.getKeyboard());
+                        break;
+                }
             }
             else
             {
-                //if the puzzle finish has not been set yet
-                if (labyrinth.getFinish() == null)
+                if (opponent == null)
+                    opponent = new Player();
+                
+                switch (render)
                 {
-                    int cost = -1;
-                    
-                    Cell finish = new Cell();
-                    
-                    for (Location tmp : labyrinth.getLocations())
-                    {
-                        //if the Location cost is greater than the current cost
-                        if (tmp.getCost() > cost)
-                        {
-                            cost = tmp.getCost();
-                            finish = tmp;
-                        }
-                    }
-                    
-                    //the finish part of the maze will always be the furthest away from the start Location
-                    labyrinth.setFinish(finish.getCol(), finish.getRow());
-                }
-                else
-                {
-                    double col = 0, row = 0;
-                    
-                    switch (render)
-                    {
-                        case Original:
-                            topDown.update(engine.getKeyboard(), labyrinth);
-                            col = topDown.getX();
-                            row = topDown.getY();
-                            break;
-
-                        case Isometric:
-                            isometric.update(engine.getKeyboard(), labyrinth);
-                            col = isometric.getX();
-                            row = isometric.getY();
-                            break;
-
-                        case First_Person:
-                            firstPerson.update(engine.getKeyboard(), labyrinth.getLocation((int)firstPerson.getX(), (int)firstPerson.getY()).getWalls());
-                            col = firstPerson.getX();
-                            row = firstPerson.getY();
-                            break;
-                    }
-                    
-                    //ensure all 3 scenarios below maintain the same location
-                    isometric.setLocation(col, row);
-                    topDown.setLocation(col, row);
-                    firstPerson.setLocation(col, row);
+                    case Original:
+                    case Isometric:
+                        //set speed of player
+                        opponent.setVelocity(Player.VELOCITY);
+                        opponent.checkAgent(labyrinth);
+                        opponent.update();
+                        break;
+                        
+                    case First_Person:
+                        //set speed of player
+                        opponent.setVelocity(Player.VELOCITY_3D);
+                        opponent.checkAgent(labyrinth);
+                        
+                        firstPerson.update(labyrinth.getLocation((int)opponent.getX(), (int)opponent.getY()).getWalls(), opponent);
+                        //opponent.update();
+                        break;
                 }
             }
         }
     }
     
-    /**
-     * 
-     * @param graphics 
-     * @param screen 
-     * @return Graphics 
-     * @throws Exception 
-     */
-    /**
-     * Draw the labyrinth. If it is still in process of being created draw the progress. 
-     * @param graphics Graphics object
-     * @param mazeScreen The window the maze will be drawn in
-     * @param screen The entire screen the user sees
-     * @throws Exception 
-     */
     public void render(final Graphics2D graphics, final Rectangle screen) throws Exception
     {
         if (labyrinth != null)
@@ -228,33 +263,49 @@ public class Puzzle
             //don't draw maze until finish has been set
             if (labyrinth.getFinish() == null)
                 return;
+        
+            if (human != null)
+                renderPlayer(graphics, screen, human);
 
-            Graphics2D imageGraphics = puzzleImage.createGraphics();
-            
-            //background will be black in all scenarios
-            imageGraphics.setColor(Color.BLACK);
-            imageGraphics.fillRect(0, 0, puzzleImage.getWidth(), puzzleImage.getHeight());
-
-            switch (render)
-            {
-                case Original:
-                    imageGraphics.setStroke(STROKE_REGULAR);
-                    topDown.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
-                    break;
-
-                case Isometric:
-                    imageGraphics.setStroke(STROKE_REGULAR);
-                    isometric.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
-                    break;
-
-                case First_Person:
-                    //walls drawn will have some thickness
-                    imageGraphics.setStroke(STROKE_THICK);
-                    firstPerson.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish());
-                    break;
-            }
-            
-            graphics.drawImage(puzzleImage, screen.x, screen.y + screen.height - container.height, container.width, container.height, null);
+            if (opponent != null)
+                renderPlayer(graphics, screen, opponent);
         }
+    }
+    
+    /**
+     * Draw the labyrinth. If it is still in process of being created draw the progress. 
+     * @param graphics Graphics object
+     * @param screen The entire screen the user sees
+     * @param player The player containing the location etc...
+     * @throws Exception 
+     */
+    private void renderPlayer(final Graphics2D graphics, final Rectangle screen, final Player player) throws Exception
+    {
+        Graphics2D imageGraphics = puzzleImage.createGraphics();
+
+        //background will be black in all scenarios
+        imageGraphics.setColor(Color.BLACK);
+        imageGraphics.fillRect(0, 0, puzzleImage.getWidth(), puzzleImage.getHeight());
+
+        switch (render)
+        {
+            case Original:
+                imageGraphics.setStroke(STROKE_REGULAR);
+                topDown.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish(), player);
+                break;
+
+            case Isometric:
+                imageGraphics.setStroke(STROKE_REGULAR);
+                isometric.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish(), player);
+                break;
+
+            case First_Person:
+                //walls drawn will have some thickness
+                imageGraphics.setStroke(STROKE_THICK);
+                firstPerson.render(imageGraphics, container, labyrinth.getLocations(), labyrinth.getFinish(), player);
+                break;
+        }
+
+        graphics.drawImage(puzzleImage, screen.x, screen.y + screen.height - container.height, container.width, container.height, null);
     }
 }

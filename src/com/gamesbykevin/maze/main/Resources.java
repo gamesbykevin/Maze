@@ -34,7 +34,7 @@ public class Resources
     
     public enum GameImage
     {
-        
+        ArrowUp, ArrowRight, ArrowDown, ArrowLeft
     }
     
     public enum MenuImage
@@ -59,7 +59,7 @@ public class Resources
         add(Type.MenuImage, (Object[])MenuImage.values(), RESOURCE_DIR + "images/menu/{0}.gif", "Loading Menu Image Resources", Manager.Type.Image);
         
         //load all game images
-        //add(Type.GameImage, (Object[])GameImage.values(), RESOURCE_DIR + "images/game/{0}.gif", "Loading Game Image Resources", Manager.Type.Image);
+        add(Type.GameImage, (Object[])GameImage.values(), RESOURCE_DIR + "images/game/{0}.gif", "Loading Game Image Resources", Manager.Type.Image);
         
         //load all game fonts
         add(Type.GameFont, (Object[])GameFont.values(), RESOURCE_DIR + "font/{0}.ttf", "Loading Game Font Resources", Manager.Type.Font);

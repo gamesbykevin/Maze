@@ -1,12 +1,10 @@
 package com.gamesbykevin.maze.puzzle;
 
 import com.gamesbykevin.framework.base.Cell;
-import com.gamesbykevin.framework.input.Keyboard;
-import com.gamesbykevin.framework.labyrinth.Labyrinth;
 import com.gamesbykevin.framework.labyrinth.Location;
 import com.gamesbykevin.framework.labyrinth.Location.Wall;
 
-import com.gamesbykevin.maze.players.Player;
+import com.gamesbykevin.maze.player.Player;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -14,25 +12,8 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.List;
 
-public class TopDown extends Player
+public class TopDown
 {
-    public TopDown()
-    {
-        super(Player.VELOCITY);
-    }
-    
-    public void update(final Keyboard keyboard, final Labyrinth labyrinth) throws Exception
-    {
-        //set velocity based on keyboard input
-        super.checkInput(keyboard);
-        
-        //check for basic wall collision
-        super.checkCollision(labyrinth);
-        
-        //update location
-        super.update();
-    }
-    
     /**
      * Draw the original top-down 2d version of the maze
      * @param graphics
@@ -40,15 +21,18 @@ public class TopDown extends Player
      * @return Graphics
      * @throws Exception 
      */
-    public void render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Cell finish) throws Exception
+    public void render(final Graphics graphics, final Rectangle screen, final List<Location> locations, final Cell finish, final Player player) throws Exception
     {
+        if (player == null)
+            return;
+        
         Location solution = null;
         
         //draw the walls of each cell not including the solution
         for (Location cell : locations)
         {
             //if not close enough we won't render
-            if (!hasRange(cell))
+            if (!player.hasRange(cell))
                 continue;
             
             //draw the solution last
@@ -58,31 +42,31 @@ public class TopDown extends Player
                 continue;
             }
             
-            drawWalls(graphics, cell, screen, Puzzle.WALL_COLOR);
+            drawWalls(graphics, cell, screen, Puzzle.WALL_COLOR, player.getX(), player.getY());
         }
         
         //draw solution last
         if (solution != null)
         {
-            drawWalls(graphics, solution, screen, Puzzle.SOLUTION_COLOR);
+            drawWalls(graphics, solution, screen, Puzzle.SOLUTION_COLOR, player.getX(), player.getY());
         }
         
         final int drawX = (screen.width  / 2);
         final int drawY = (screen.height / 2);
         
-        if (super.getWidth() == 0 || super.getHeight() == 0)
+        if (player.getWidth() == 0 || player.getHeight() == 0)
         {
-            super.setWidth(Puzzle.CELL_WIDTH * .5);
-            super.setHeight(Puzzle.CELL_HEIGHT * .5);
+            player.setWidth(Puzzle.CELL_WIDTH * .5);
+            player.setHeight(Puzzle.CELL_HEIGHT * .5);
         }
         
-        setBoundary(drawX, drawY);
+        setBoundary(drawX, drawY, player);
         
         graphics.setColor(Color.GREEN);
-        graphics.fillPolygon(super.getBoundary());
+        graphics.fillPolygon(player.getBoundary());
     }
     
-    private void setBoundary(final double startX, final double startY)
+    private void setBoundary(final double startX, final double startY, final Player player)
     {
         int[] x = new int[4];
         int[] y = new int[4];
@@ -92,18 +76,18 @@ public class TopDown extends Player
         y[0] = (int)startY;
         
         //north east
-        x[1] = x[0] + (int)getWidth();
+        x[1] = x[0] + (int)player.getWidth();
         y[1] = y[0];
         
         //south east
         x[2] = x[1];
-        y[2] = y[1] + (int)getHeight();
+        y[2] = y[1] + (int)player.getHeight();
         
         //south west
-        x[3] = x[2] - (int)getWidth();
+        x[3] = x[2] - (int)player.getWidth();
         y[3] = y[2];
         
-        super.setBoundary(new Polygon(x, y, x.length));
+        player.setBoundary(new Polygon(x, y, x.length));
     }
     
     /**
@@ -114,10 +98,10 @@ public class TopDown extends Player
      * @param screen The boundary visible to the player
      * @param color The color of the wall
      */
-    private void drawWalls(final Graphics graphics, final Location location, final Rectangle screen, final Color color)
+    private void drawWalls(final Graphics graphics, final Location location, final Rectangle screen, final Color color, final double centerCol, final double centerRow)
     {
-        final int drawX = (screen.width  / 2) + (int)((location.getCol() - super.getX()) * Puzzle.CELL_WIDTH);
-        final int drawY = (screen.height / 2) + (int)((location.getRow() - super.getY()) * Puzzle.CELL_HEIGHT);
+        final int drawX = (screen.width  / 2) + (int)((location.getCol() - centerCol) * Puzzle.CELL_WIDTH);
+        final int drawY = (screen.height / 2) + (int)((location.getRow() - centerRow) * Puzzle.CELL_HEIGHT);
 
         //don't draw the cell if it isn't on the screen
         if (!screen.intersects(drawX, drawY, Puzzle.CELL_WIDTH, Puzzle.CELL_HEIGHT))

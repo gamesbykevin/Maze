@@ -157,12 +157,6 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         //make sure all Render Options have the same value
         menu.setOptionSelectionIndex(OptionKey.Render, renderIndex);
         
-        if (puzzle != null)
-        {
-            puzzle.dispose();
-            puzzle = null;
-        }
-        
         puzzle = new Puzzle(total, algorithmIndex, renderIndex, main.getScreen());
         
         //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
