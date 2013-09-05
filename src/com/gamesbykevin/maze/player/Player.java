@@ -47,10 +47,10 @@ public final class Player extends Sprite
     //has the player solved the maze
     private boolean solved = false;
     
-    private static final double FACE_EAST  = 4.716592653589797;
-    private static final double FACE_WEST  = 1.5834073464102139;
-    private static final double FACE_NORTH = 0.008407346410215233;
-    private static final double FACE_SOUTH = 3.1584073464102165;
+    private static final double FACE_EAST  = Math.toRadians(270);
+    private static final double FACE_WEST  = Math.toRadians(90);
+    private static final double FACE_NORTH = Math.toRadians(0);
+    private static final double FACE_SOUTH = Math.toRadians(180);
     
     public Player()
     {
@@ -341,31 +341,15 @@ public final class Player extends Sprite
         {
             if (west < nextCell.getCol() || east < nextCell.getCol())
             {
-                super.resetVelocity();
-                
+                //velocity for 3d is handled differently
                 if (is3D())
                 {
                     setAngleDestination(FACE_EAST);
                     
                     if (getAngle() != getAngleDestination())
                     {
-                        final double result = getAngleDestination() - getAngle();
-                        
-                        if (getAngle() > getAngleDestination())
-                        {
-                            setVelocityX(getVelocity());
-                        }
-                        else
-                        {
-                            setVelocityX(-getVelocity());
-                        }
-                        
-                        //we are close enough to goal so hard set
-                        if (result >= -.1 && result <= .1)
-                        {
-                            setAngle(getAngleDestination());
-                            resetVelocityX();
-                        }
+                        //the current angle is not yet at the destination so we need to determine where to turn
+                        adjustTurnVelocity();
                     }
                     else
                     {
@@ -374,37 +358,22 @@ public final class Player extends Sprite
                 }
                 else
                 {
+                    resetVelocity();
                     setVelocityX(getVelocity());
                 }
             }
             
             if (west > nextCell.getCol() || east > nextCell.getCol())
             {
-                super.resetVelocity();
-                
+                //velocity for 3d is handled differently
                 if (is3D())
                 {
                     setAngleDestination(FACE_WEST);
                     
                     if (getAngle() != getAngleDestination())
                     {
-                        final double result = getAngleDestination() - getAngle();
-                        
-                        if (getAngle() > getAngleDestination())
-                        {
-                            setVelocityX(getVelocity());
-                        }
-                        else
-                        {
-                            setVelocityX(-getVelocity());
-                        }
-                        
-                        //we are close enough to goal so hard set
-                        if (result >= -.1 && result <= .1)
-                        {
-                            setAngle(getAngleDestination());
-                            resetVelocityX();
-                        }
+                        //the current angle is not yet at the destination so we need to determine where to turn
+                        adjustTurnVelocity();
                     }
                     else
                     {
@@ -413,37 +382,22 @@ public final class Player extends Sprite
                 }
                 else
                 {
+                    resetVelocity();
                     setVelocityX(-getVelocity());
                 }
             }
             
             if (north < nextCell.getRow() || south < nextCell.getRow())
             {
-                resetVelocity();
-                
+                //velocity for 3d is handled differently
                 if (is3D())
                 {
                     setAngleDestination(FACE_SOUTH);
                     
                     if (getAngle() != getAngleDestination())
                     {
-                        final double result = getAngleDestination() - getAngle();
-                        
-                        if (getAngle() > getAngleDestination())
-                        {
-                            setVelocityX(getVelocity());
-                        }
-                        else
-                        {
-                            setVelocityX(-getVelocity());
-                        }
-                        
-                        //we are close enough to goal so hard set
-                        if (result >= -.1 && result <= .1)
-                        {
-                            setAngle(getAngleDestination());
-                            resetVelocityX();
-                        }
+                        //the current angle is not yet at the destination so we need to determine where to turn
+                        adjustTurnVelocity();
                     }
                     else
                     {
@@ -452,37 +406,22 @@ public final class Player extends Sprite
                 }
                 else
                 {
+                    resetVelocity();
                     setVelocityY(getVelocity());
                 }
             }
             
             if (north > nextCell.getRow() || south > nextCell.getRow())
             {
-                resetVelocity();
-                
+                //velocity for 3d is handled differently
                 if (is3D())
                 {
                     setAngleDestination(FACE_NORTH);
                     
                     if (getAngle() != getAngleDestination())
                     {
-                        final double result = getAngleDestination() - getAngle();
-                        
-                        if (getAngle() > getAngleDestination())
-                        {
-                            setVelocityX(getVelocity());
-                        }
-                        else
-                        {
-                            setVelocityX(-getVelocity());
-                        }
-                        
-                        //we are close enough to goal so hard set
-                        if (result >= -.1 && result <= .1)
-                        {
-                            setAngle(getAngleDestination());
-                            resetVelocityX();
-                        }
+                        //the current angle is not yet at the destination so we need to determine where to turn
+                        adjustTurnVelocity();
                     }
                     else
                     {
@@ -491,6 +430,7 @@ public final class Player extends Sprite
                 }
                 else
                 {
+                    resetVelocity();
                     setVelocityY(-getVelocity());
                 }
             }
@@ -539,6 +479,30 @@ public final class Player extends Sprite
                 path.remove(path.size() - 1);
             }
         }
+    }
+    
+    /**
+     * Here we will determine if the AI has finished turning towards the next destination
+     */
+    private void adjustTurnVelocity()
+    {
+        //determine how close are we to the destination
+        final double result = getAngleDestination() - getAngle();
+        
+        //if the distance apart is less than the turn VELOCITY we are close enough
+        if (result >= -VELOCITY * 2 && result <= VELOCITY * 2)
+        {
+            setAngle(getAngleDestination());
+            resetVelocity();
+        }
+        
+        resetVelocity();
+        
+        if (getAngleDestination() > getAngle())
+            setVelocityX(-getVelocity());
+        
+        if (getAngleDestination() < getAngle())
+            setVelocityX(getVelocity());
     }
     
     public void setSolved(final boolean solved)
