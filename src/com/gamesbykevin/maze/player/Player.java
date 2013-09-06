@@ -35,11 +35,11 @@ public final class Player extends Sprite
     //draw any cells within the range to prevent performance issues
     private static final int RENDER_RANGE = 15;
     
-    //angle we are facing 0 - 360 for 3D
-    private double angle = Math.PI;
+    //angle we are facing
+    private double angle = FACE_SOUTH;
     
     //where we want to end up facing (for AI)
-    private double angleDestination = Math.PI;
+    private double angleDestination = FACE_SOUTH;
     
     //the path for the AI to remember where it has been
     private List<Cell> path;
@@ -148,16 +148,16 @@ public final class Player extends Sprite
         /* Manage all keys pressed */
         
         if (keyboard.hasKeyPressed(KeyEvent.VK_RIGHT))
-            super.setVelocityX(getVelocity());
+            setVelocityX(getVelocity());
         
         if (keyboard.hasKeyPressed(KeyEvent.VK_LEFT))
-            super.setVelocityX(-getVelocity());
+            setVelocityX(-getVelocity());
         
         if (keyboard.hasKeyPressed(KeyEvent.VK_UP))
-            super.setVelocityY(-getVelocity());
+            setVelocityY(-getVelocity());
         
         if (keyboard.hasKeyPressed(KeyEvent.VK_DOWN))
-            super.setVelocityY(getVelocity());
+            setVelocityY(getVelocity());
         
         
         /* Manage all keys released */
@@ -166,34 +166,35 @@ public final class Player extends Sprite
         {
             keyboard.removeKeyPressed(KeyEvent.VK_DOWN);
             keyboard.removeKeyReleased(KeyEvent.VK_DOWN);
-            super.resetVelocityY();
+            resetVelocityY();
         }
         
         if (keyboard.hasKeyReleased(KeyEvent.VK_UP))
         {
             keyboard.removeKeyPressed(KeyEvent.VK_UP);
             keyboard.removeKeyReleased(KeyEvent.VK_UP);
-            super.resetVelocityY();
+            resetVelocityY();
         }
         
         if (keyboard.hasKeyReleased(KeyEvent.VK_RIGHT))
         {
             keyboard.removeKeyPressed(KeyEvent.VK_RIGHT);
             keyboard.removeKeyReleased(KeyEvent.VK_RIGHT);
-            super.resetVelocityX();
+            resetVelocityX();
         }
         
         if (keyboard.hasKeyReleased(KeyEvent.VK_LEFT))
         {
             keyboard.removeKeyPressed(KeyEvent.VK_LEFT);
             keyboard.removeKeyReleased(KeyEvent.VK_LEFT);
-            super.resetVelocityX();
+            resetVelocityX();
         }
     }
     
     /**
      * Detect if there is a collision with a wall.
      * This is for the Top-Down and Isometric mazes.
+     * We also check here if the maze is solved
      * 
      * @param labyrinth
      * @throws Exception 
@@ -211,7 +212,7 @@ public final class Player extends Sprite
         //if out of bounds reset velocity
         if (getX() + super.getVelocityX() < 0 || getY() + super.getVelocityY() < 0)
         {
-            super.resetVelocity();
+            resetVelocity();
             return;
         }
         
@@ -225,6 +226,14 @@ public final class Player extends Sprite
         int south = (int)(getY() + getVelocityY() + (double)(tmp.getHeight() / Puzzle.CELL_HEIGHT));
         int north = (int)(getY() + getVelocityY());
 
+        //if we found the goal no more work is necessary
+        if (labyrinth.getFinish().equals((int)super.getX(),(int)super.getY()) && east == west && north == south)
+        {
+            setSolved(true);
+            resetVelocity();
+            return;
+        }
+        
         if (getVelocityX() > 0 && (int)getX() != east || getVelocityX() < 0 && (int)getX() != west)
         {
             //if north and south row is different we are hitting a wall on the side
@@ -441,7 +450,7 @@ public final class Player extends Sprite
             if (labyrinth.getFinish().equals((int)super.getX(),(int)super.getY()))
             {
                 setSolved(true);
-                super.resetVelocity();
+                resetVelocity();
                 return;
             }
             
@@ -486,6 +495,44 @@ public final class Player extends Sprite
      */
     private void adjustTurnVelocity()
     {
+        resetVelocityY();
+        
+        if (getAngle() == FACE_EAST && getAngleDestination() == FACE_NORTH)
+            setVelocityX(-getVelocity());
+        
+        if (getAngle() == FACE_EAST && getAngleDestination() == FACE_SOUTH)
+            setVelocityX(getVelocity());
+        
+        if (getAngle() == FACE_EAST && getAngleDestination() == FACE_WEST)
+            setVelocityX((Math.random() > .5) ? -getVelocity() : getVelocity());
+
+        if (getAngle() == FACE_WEST && getAngleDestination() == FACE_NORTH)
+            setVelocityX(getVelocity());
+        
+        if (getAngle() == FACE_WEST && getAngleDestination() == FACE_SOUTH)
+            setVelocityX(-getVelocity());
+        
+        if (getAngle() == FACE_WEST && getAngleDestination() == FACE_EAST)
+            setVelocityX((Math.random() > .5) ? -getVelocity() : getVelocity());
+        
+        if (getAngle() == FACE_SOUTH && getAngleDestination() == FACE_EAST)
+            setVelocityX(-getVelocity());
+        
+        if (getAngle() == FACE_SOUTH && getAngleDestination() == FACE_WEST)
+            setVelocityX(getVelocity());
+        
+        if (getAngle() == FACE_SOUTH && getAngleDestination() == FACE_NORTH)
+            setVelocityX((Math.random() > .5) ? -getVelocity() : getVelocity());
+
+        if (getAngle() == FACE_NORTH && getAngleDestination() == FACE_EAST)
+            setVelocityX(getVelocity());
+        
+        if (getAngle() == FACE_NORTH && getAngleDestination() == FACE_WEST)
+            setVelocityX(-getVelocity());
+        
+        if (getAngle() == FACE_NORTH && getAngleDestination() == FACE_SOUTH)
+            setVelocityX((Math.random() > .5) ? -getVelocity() : getVelocity());
+        
         //determine how close are we to the destination
         final double result = getAngleDestination() - getAngle();
         
@@ -495,14 +542,6 @@ public final class Player extends Sprite
             setAngle(getAngleDestination());
             resetVelocity();
         }
-        
-        resetVelocity();
-        
-        if (getAngleDestination() > getAngle())
-            setVelocityX(-getVelocity());
-        
-        if (getAngleDestination() < getAngle())
-            setVelocityX(getVelocity());
     }
     
     public void setSolved(final boolean solved)

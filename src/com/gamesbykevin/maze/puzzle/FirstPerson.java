@@ -186,9 +186,6 @@ public class FirstPerson
         
         //check for corner collision
         checkCorners(player);
-        
-        //reset turn speed
-        player.resetVelocityX();
     }
     
     /**

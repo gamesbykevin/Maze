@@ -30,7 +30,7 @@ public class CustomMenu extends Menu
     {
         Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, 
         NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, Algorithm, 
-        MazeDimensions, Render
+        MazeDimensions, Render, GameType, PlayerMode, VsDifficulty
     }
     
     //unique key to indentify each Layer

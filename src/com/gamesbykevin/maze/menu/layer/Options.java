@@ -8,7 +8,7 @@ import com.gamesbykevin.framework.util.TimerCollection;
 
 import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
-import com.gamesbykevin.maze.puzzle.Puzzle.Render;
+import com.gamesbykevin.maze.puzzle.Puzzle.*;
 import com.gamesbykevin.maze.menu.CustomMenu;
 import com.gamesbykevin.maze.puzzle.Puzzle;
 
@@ -32,6 +32,27 @@ public class Options extends Layer implements LayerRules
     {
         //setup options here
         Option tmp;
+        
+        tmp = new Option("Player Mode: ");
+        for (PlayerMode mode : PlayerMode.values())
+        {
+            tmp.add(mode.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(CustomMenu.OptionKey.PlayerMode, tmp);
+        
+        tmp = new Option("Difficulty (Vs Only): ");
+        for (VsDifficulty difficulty : VsDifficulty.values())
+        {
+            tmp.add(difficulty.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(CustomMenu.OptionKey.VsDifficulty, tmp);
+        
+        tmp = new Option("Game Type: ");
+        for (GameType type : GameType.values())
+        {
+            tmp.add(type.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        }
+        super.add(CustomMenu.OptionKey.GameType, tmp);
         
         tmp = new Option("Render: ");
         for (Render render : Render.values())

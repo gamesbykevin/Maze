@@ -154,12 +154,19 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         //how will we draw the maze
         final int renderIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
         
+        //free or timed game type
+        final int gameTypeIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.GameType);
+        
+        //1 player, 2 player etc..
+        final int playerModeIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.PlayerMode);
+        
+        //what is the difficulty
+        final int difficultyIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.VsDifficulty);
+        
         //make sure all Render Options have the same value
         menu.setOptionSelectionIndex(OptionKey.Render, renderIndex);
         
-        puzzle = new Puzzle(total, algorithmIndex, renderIndex, main.getScreen());
-        
-        //final int levelIndex = menu.getOptionSelectionIndex(GameMenu.LayerKey.Options, GameMenu.OptionKey.LevelSelect);
+        puzzle = new Puzzle(total, algorithmIndex, renderIndex, gameTypeIndex, playerModeIndex, difficultyIndex, main.getTimeDeductionPerUpdate(), main.getScreen());
     }
     
     /**
