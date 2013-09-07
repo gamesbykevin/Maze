@@ -118,6 +118,7 @@ public class Puzzle
     private static final long EASY_DELAY = TimerCollection.toNanoSeconds(60L);
     private static final long HARD_DELAY   = TimerCollection.toNanoSeconds(30L);
     
+    //which algorithm we are using
     private final int algorithmIndex;
     
     /**
