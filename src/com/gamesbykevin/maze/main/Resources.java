@@ -34,7 +34,8 @@ public class Resources
     
     public enum MenuImage
     {
-        TitleScreen, Credits, AppletFocus, TitleBackground, Mouse, MouseDrag, Controls, 
+        TitleScreen, Credits, AppletFocus, TitleBackground, Mouse, MouseDrag, 
+        Controls1, Controls2, 
         Instructions1, Instructions2, Instructions3
     }
     

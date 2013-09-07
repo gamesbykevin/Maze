@@ -5,14 +5,14 @@ import com.gamesbykevin.maze.main.Engine;
 import com.gamesbykevin.maze.main.Resources;
 import com.gamesbykevin.maze.menu.CustomMenu;
 
-public class Controls extends Layer implements LayerRules
+public class Controls1 extends Layer implements LayerRules
 {
-    public Controls(final Engine engine)
+    public Controls1(final Engine engine)
     {
         super(Layer.Type.NONE, engine.getMain().getScreen());
         
-        setImage(engine.getResources().getMenuImage(Resources.MenuImage.Controls));
-        setNextLayer(CustomMenu.LayerKey.MainTitle);
+        setImage(engine.getResources().getMenuImage(Resources.MenuImage.Controls1));
+        setNextLayer(CustomMenu.LayerKey.Controls2);
         setForce(false);
         setPause(true);
         setTimer(null);

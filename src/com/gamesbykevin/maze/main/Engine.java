@@ -11,8 +11,6 @@ import com.gamesbykevin.maze.menu.CustomMenu.OptionKey;
 import java.awt.*;
 import java.awt.event.*;
 
-//TODO here we need to have the resources object and the menu object
-
 public class Engine implements KeyListener, MouseMotionListener, MouseListener, EngineRules 
 {
     //our Main class has important information in it so we need a reference here
@@ -149,7 +147,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         final int algorithmIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Algorithm);
         
         //each maze will have the same number of columns/rows
-        final int total = Puzzle.DIMENSION_SELECTIONS[menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeDimensions)];
+        final int dimensionIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.MazeDimensions);
         
         //how will we draw the maze
         final int renderIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
@@ -166,7 +164,7 @@ public class Engine implements KeyListener, MouseMotionListener, MouseListener, 
         //make sure all Render Options have the same value
         menu.setOptionSelectionIndex(OptionKey.Render, renderIndex);
         
-        puzzle = new Puzzle(total, algorithmIndex, renderIndex, gameTypeIndex, playerModeIndex, difficultyIndex, main.getTimeDeductionPerUpdate(), main.getScreen());
+        puzzle = new Puzzle(dimensionIndex, algorithmIndex, renderIndex, gameTypeIndex, playerModeIndex, difficultyIndex, main.getTimeDeductionPerUpdate(), main.getScreen());
     }
     
     /**

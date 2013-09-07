@@ -21,7 +21,7 @@ public class Shared
     public static final int ORIGINAL_HEIGHT = 450;
     
     //show UPS/FPS counters
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     
     //how many updates per second, controls speed of game
     public static final int DEFAULT_UPS = 60;
@@ -30,7 +30,7 @@ public class Shared
     public static final int DEFAULT_FPS = 30;
     
     //what is the name of our game
-    public static final String GAME_NAME = "Maze Adventure";
+    public static final String GAME_NAME = "Maze Adventures";
     
     //blank cursor created here to hide the mouse cursor
     public static final Cursor CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank cursor");

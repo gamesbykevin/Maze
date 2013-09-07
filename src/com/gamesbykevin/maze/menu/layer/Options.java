@@ -62,6 +62,8 @@ public class Options extends Layer implements LayerRules
         super.add(CustomMenu.OptionKey.Render, tmp);
         
         tmp = new Option("Algorithm: ");
+        tmp.add("Random", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
+        
         for (Algorithm algorithm : Algorithm.values())
         {
             tmp.add(algorithm.toString(), engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
@@ -76,10 +78,12 @@ public class Options extends Layer implements LayerRules
         }
         super.add(CustomMenu.OptionKey.MazeDimensions, tmp);
 
+        /*
         tmp = new Option("Sound: ");
         tmp.add("On", engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         tmp.add("Off",engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));
         super.add(CustomMenu.OptionKey.Sound, tmp);
+        */
         
         tmp = new Option("FullScreen: ");
         tmp.add("Off",engine.getResources().getMenuAudio(Resources.MenuAudio.MenuChange));

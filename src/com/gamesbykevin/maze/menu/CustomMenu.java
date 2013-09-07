@@ -36,7 +36,9 @@ public class CustomMenu extends Menu
     //unique key to indentify each Layer
     public enum LayerKey 
     {
-        Title, Credits, MainTitle, Options, Controls, Instructions1, Instructions2, Instructions3, 
+        Title, Credits, MainTitle, Options, 
+        Controls1, Controls2, 
+        Instructions1, Instructions2, Instructions3, 
         OptionsInGame, NewGameConfirm, ExitGameConfirm, NoFocus, StartGame, NewGameConfirmed
     }
     
@@ -58,7 +60,8 @@ public class CustomMenu extends Menu
         super.add(LayerKey.Credits,         new Credits(engine));
         super.add(LayerKey.MainTitle,       new MainTitle(engine));
         super.add(LayerKey.Options,         new Options(engine));
-        super.add(LayerKey.Controls,        new Controls(engine));
+        super.add(LayerKey.Controls1,       new Controls1(engine));
+        super.add(LayerKey.Controls2,       new Controls2(engine));
         super.add(LayerKey.Instructions1,   new Instructions1(engine));
         super.add(LayerKey.Instructions2,   new Instructions2(engine));
         super.add(LayerKey.Instructions3,   new Instructions3(engine));
@@ -99,7 +102,7 @@ public class CustomMenu extends Menu
             //if on the options screen check if sound/fullScreen enabled
             if (super.hasCurrent(LayerKey.Options))
             {
-                soundIndex      = getOptionSelectionIndex(LayerKey.Options, OptionKey.Sound);
+                //soundIndex      = getOptionSelectionIndex(LayerKey.Options, OptionKey.Sound);
                 fullscreenIndex = getOptionSelectionIndex(LayerKey.Options, OptionKey.FullScreen);
                 renderIndex     = getOptionSelectionIndex(LayerKey.Options, OptionKey.Render);
             }
@@ -107,7 +110,7 @@ public class CustomMenu extends Menu
             //if on the in-game options screen check if sound/fullScreen enabled
             if (super.hasCurrent(LayerKey.OptionsInGame))
             {
-                soundIndex      = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Sound);
+                //soundIndex      = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Sound);
                 fullscreenIndex = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.FullScreen);
                 renderIndex     = getOptionSelectionIndex(LayerKey.OptionsInGame, OptionKey.Render);
             }
